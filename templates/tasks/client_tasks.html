@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}My Tasks - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tasks/tasks.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="tasks-container">
+    <h1 class="tasks-title">My Tasks</h1>
+    <p class="tasks-subtitle">View and manage your assigned activities.</p>
+
+    <div class="card task-list-card">
+        <h3 class="card-title">My Assigned Tasks</h3>
+        {% if my_tasks %}
+            <ul class="task-list">
+                {% for task in my_tasks %}
+                    <li class="task-item">
+                        <div class="task-details">
+                            <p><strong>Title:</strong> {{ task.title }}</p>
+                            {% if task.description %}<p><strong>Description:</strong> {{ task.description }}</p>{% endif %}
+                            
+                            {# MODIFIED: Display uploaded media #}
+                            {% if task.image_url %}
+                                <div class="task-media">
+                                    <p><strong>Illustration:</strong></p>
+                                    <img src="{{ task.image_url }}" alt="Task Illustration" class="task-thumbnail" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/image_placeholder.png') }}';">
+                                </div>
+                            {% endif %}
+                            {% if task.video_url %}
+                                <div class="task-media">
+                                    <p><strong>Video Guide:</strong></p>
+                                    <div class="video-player-container">
+                                        <video controls preload="metadata" class="task-video-player">
+                                            <source src="{{ task.video_url }}" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {# END MODIFIED #}
+
+                            <p><strong>Assigned By:</strong> {{ task.therapist_user.name }}</p>
+                            <p><strong>Due Date:</strong> {{ task.due_date.strftime('%Y-%m-%d %H:%M') if task.due_date else 'N/A' }}</p>
+                            <p><strong>Status:</strong> <span class="status-{{ task.status }}">{{ task.status | capitalize }}</span></p>
+                            {% if task.completed_at %}<p><strong>Completed At:</strong> {{ task.completed_at.strftime('%Y-%m-%d %H:%M') }}</p>{% endif %}
+                        </div>
+                        <div class="task-actions">
+                            {% if task.status == 'pending' %}
+                                <form action="{{ url_for('mark_task_complete', task_id=task.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-success btn-sm">Mark Complete</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted text-center">No tasks assigned to you yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

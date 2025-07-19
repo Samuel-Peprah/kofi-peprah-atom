@@ -1,0 +1,52 @@
+<header class="main-header">
+    <div class="container header-content">
+        <div class="logo-container">
+            <a href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/gerio_care_logo.png') }}" alt="GerioCare Logo" class="app-logo">
+            </a>
+            <span class="app-name">GerioCare</span>
+        </div>
+        <nav class="main-nav">
+            <ul>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('index') }}" class="nav-link">Dashboard</a>
+                    <a href="{{ url_for('appointments') }}" class="nav-link">Appointments</a>
+                    <a href="{{ url_for('messages') }}" class="nav-link">Messages</a>
+                    <a href="{{ url_for('tasks') }}" class="nav-link">Tasks</a>
+                    {% if current_user.role in ['therapist', 'admin', 'caregiver'] %}
+                        <a href="{{ url_for('forms_selection') }}" class="nav-link">Forms</a>
+                    {% endif %}
+                    {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('users_list') }}" class="nav-link">Users</a>
+                        <a href="{{ url_for('link_caregiver') }}" class="nav-link">Link Caregiver</a>
+                    {% endif %}
+                    {% if current_user.role in ['admin', 'therapist', 'caregiver'] %}
+                        <a href="{{ url_for('assessments_list') }}" class="nav-link">Assessments</a>
+                    {% endif %}
+                    <a href="{{ url_for('alerts') }}" class="nav-link alerts-link">
+                        Alerts
+                        {% if unread_alerts_count > 0 %}
+                            <span class="alerts-badge">{{ unread_alerts_count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('profile_edit') }}" class="nav-link">Profile</a>
+                
+                    {# NEW: Subscription Links for authenticated users #}
+                    {% if current_user.role == 'client' %}
+                        <a href="{{ url_for('my_subscription') }}" class="nav-link">My Subscription</a>
+                    {% endif %}
+                    <a href="{{ url_for('pricing') }}" class="nav-link">Pricing</a>
+
+                    <a href="{{ url_for('logout') }}" class="nav-link logout-link">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                    <a href="{{ url_for('register') }}" class="nav-link">Register</a>
+                    <a href="{{ url_for('pricing') }}" class="nav-link">Pricing</a> {# Show pricing to unauthenticated users #}
+                {% endif %}
+            </ul>
+        </nav>
+        <button class="menu-toggle" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</header>

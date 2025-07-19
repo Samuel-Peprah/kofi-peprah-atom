@@ -1,0 +1,165 @@
+/* static/css/users/users_list.css */
+
+.list-container {
+    padding: 2rem 1rem;
+    background-color: var(--color-background-light);
+    min-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.list-title {
+    font-size: 2.2rem;
+    color: var(--color-black);
+    margin-bottom: 0.5rem;
+}
+
+.list-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-dark);
+    margin-bottom: 2.5rem;
+    max-width: 800px;
+}
+
+.card {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 1000px; /* Wider for tables */
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.table-responsive {
+    overflow-x: auto; /* Make table scrollable on small screens */
+    width: 100%;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.user-table th, .user-table td {
+    padding: 12px 15px;
+    border: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.user-table th {
+    background-color: var(--color-primary-light);
+    color: var(--color-black);
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap; /* Prevent headers from wrapping */
+}
+
+.user-table td {
+    background-color: #fcfcfc;
+    font-size: 0.9rem;
+    color: var(--color-text-dark);
+}
+
+.user-table tbody tr:nth-child(even) td {
+    background-color: #f5f5f5;
+}
+
+.user-table tbody tr:hover td {
+    background-color: var(--color-light-aqua);
+}
+
+/* Role badges */
+.role-badge {
+    display: inline-block;
+    padding: 0.3em 0.8em;
+    border-radius: 0.5em;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.role-admin {
+    background-color: var(--color-secondary); /* Muted purple */
+    color: #fff;
+}
+
+.role-therapist {
+    background-color: var(--color-accent); /* Pink */
+    color: #fff;
+}
+
+.role-client {
+    background-color: var(--color-primary); /* Vibrant green */
+    color: #fff;
+}
+
+.role-caregiver { /* ADDED */
+    background-color: #6c757d; /* Gray */
+    color: #fff;
+}
+
+
+/* Status indicator (copied from dashboard CSS) */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.status-indicator.online {
+    background-color: var(--color-success);
+}
+
+.status-indicator.offline {
+    background-color: var(--color-danger);
+}
+
+.user-table .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 0.5rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767.98px) {
+    .list-title {
+        font-size: 1.8rem;
+    }
+    .list-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+    .card {
+        padding: 1rem;
+        border-radius: 0.8rem;
+    }
+    .card-title {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+    .user-table th, .user-table td {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+    .user-table .btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+    }
+}

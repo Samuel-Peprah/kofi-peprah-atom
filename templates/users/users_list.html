@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}All Users - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/users/users_list.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="list-container">
+    <h1 class="list-title">All Users</h1>
+    <p class="list-subtitle">Manage all registered users in the system.</p>
+
+    <div class="card user-list-card">
+        <h3 class="card-title">User Directory</h3>
+        {# ADDED: Link Caregiver button for Admin and Therapist roles #}
+        <div class="card-actions mb-3" style="justify-content: flex-end; display: flex;">
+            {% if current_user.role in ['admin', 'therapist'] %}
+                <a href="{{ url_for('link_caregiver') }}" class="btn btn-secondary btn-sm">Link Caregiver to Client</a>
+            {% endif %}
+        </div>
+        {% if users %}
+            <div class="table-responsive">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Last Online</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.name }}</td>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td><span class="role-badge role-{{ user.role }}">{{ user.role | capitalize }}</span></td>
+                                <td>
+                                    {% if user.is_online %}
+                                        <span class="status-indicator online"></span> Online
+                                    {% else %}
+                                        <span class="status-indicator offline"></span> Offline
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.last_online.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('messages', receiver_id=user.id) }}" class="btn btn-primary btn-sm">Message</a>
+                                    {# Add more actions like Edit User, Delete User (for admin) here later #}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted text-center">No users registered yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

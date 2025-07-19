@@ -1,0 +1,110 @@
+/* static/css/profile/profile_edit.css */
+
+.profile-edit-container {
+    padding: 2rem 1rem;
+    background-color: var(--color-background-light);
+    min-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.profile-edit-title {
+    font-size: 2.2rem;
+    color: var(--color-black);
+    margin-bottom: 0.5rem;
+}
+
+.profile-edit-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-dark);
+    margin-bottom: 2.5rem;
+    max-width: 700px;
+}
+
+.profile-edit-card {
+    background-color: #fff;
+    padding: 2.5rem 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px; /* Max width for the form */
+    text-align: left;
+}
+
+.section-title {
+    font-size: 1.6rem;
+    color: var(--color-secondary); /* Muted purple for section titles */
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--color-light-aqua); /* Subtle separator */
+    padding-bottom: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--color-text-dark);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 208, 90, 0.2);
+}
+
+.form-submit-group {
+    margin-top: 2.5rem;
+    text-align: center;
+}
+
+.btn-block {
+    display: block;
+    width: 100%;
+    max-width: 250px; /* Center and limit width of submit button */
+    margin: 0 auto;
+    padding: 1rem;
+    font-size: 1.1rem;
+    border-radius: 0.75rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 575.98px) {
+    .profile-edit-title {
+        font-size: 1.8rem;
+    }
+    .profile-edit-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+    }
+    .profile-edit-card {
+        padding: 1.5rem;
+        border-radius: 0.8rem;
+    }
+    .section-title {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+    .form-control {
+        padding: 0.7rem 0.9rem;
+        font-size: 0.9rem;
+    }
+    .btn-block {
+        padding: 0.9rem;
+        font-size: 1rem;
+    }
+}

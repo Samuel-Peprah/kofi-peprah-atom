@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Therapist Dashboard - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards/therapist_dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="dashboard-title">Therapist Dashboard</h1>
+    <p class="dashboard-subtitle">Welcome, {{ current_user.name }}! Here's your patient overview.</p>
+
+    <div class="dashboard-grid">
+        <!-- My Patients Card -->
+        <div class="dashboard-card my-patients-card">
+            <h3 class="card-title">My Patients</h3>
+            <p>A list of clients you are currently managing.</p>
+            <div class="patient-list mt-3">
+                <h4>Active Clients</h4>
+                {% if my_clients %}
+                    <ul>
+                        {% for client in my_clients %}
+                            <li>
+                                <strong>{{ client.name }}</strong> ({{ client.username }})
+                                {% if client.is_online %}
+                                    <span class="status-indicator online">Online</span>
+                                {% else %}
+                                    <span class="status-indicator offline">Offline</span>
+                                {% endif %}
+                                <a href="{{ url_for('messages', receiver_id=client.id) }}" class="btn btn-primary btn-sm ml-2">Message Client</a>
+                                <a href="{{ url_for('tasks') }}?client_id={{ client.id }}" class="btn btn-secondary btn-sm ml-2">Assign Task</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No clients assigned yet.</p>
+                {% endif %}
+
+                <h4 class="mt-4">Clients' Caregivers</h4>
+                {% if clients_with_caregivers %}
+                    <ul>
+                        {% for client_data in clients_with_caregivers %}
+                            {% for caregiver in client_data.caregivers %}
+                                <li>
+                                    <strong>{{ caregiver.name }}</strong> (Caregiver for {{ client_data.client.name }})
+                                    {% if caregiver.is_online %}
+                                        <span class="status-indicator online">Online</span>
+                                    {% else %}
+                                        <span class="status-indicator offline">Offline</span>
+                                    {% endif %}
+                                    <a href="{{ url_for('messages', receiver_id=caregiver.id) }}" class="btn btn-primary btn-sm ml-2">Message Caregiver</a>
+                                </li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No caregivers linked to your clients yet.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('users_list') }}" class="btn btn-primary btn-sm">View All Users</a> {# MODIFIED: Confirmed correct link #}
+                <a href="{{ url_for('register') }}" class="btn btn-secondary btn-sm">Register New User</a>
+            </div>
+        </div>
+
+        <!-- Upcoming Appointments Card -->
+        <div class="dashboard-card appointment-card">
+            <h3 class="card-title">Upcoming Appointments</h3>
+            <p>Your scheduled patient appointments.</p>
+            <div class="appointment-list mt-3">
+                {% if upcoming_appointments %}
+                    <ul>
+                        {% for appt in upcoming_appointments %}
+                            <li>
+                                <strong>{{ appt.client.name }}</strong>
+                                <br>
+                                <span class="text-muted text-sm">{{ appt.start_time.strftime('%Y-%m-%d %H:%M') }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No upcoming appointments.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('appointments') }}" class="btn btn-primary btn-sm">View Appointments</a>
+                <a href="{{ url_for('appointments') }}" class="btn btn-secondary btn-sm">Schedule New</a>
+            </div>
+        </div>
+
+        <!-- Patient Assessment Forms Card -->
+        <div class="dashboard-card forms-card">
+            <h3 class="card-title">Patient Forms</h3>
+            <p>Access and complete patient assessment forms.</p>
+            <div class="forms-overview mt-3">
+                <h4>Quick Access</h4>
+                <ul>
+                    <li><a href="{{ url_for('outpatient_form') }}">Outpatient Form</a></li>
+                    <li><a href="{{ url_for('home_health_form') }}">Home Health Form</a></li>
+                </ul>
+                <h4 class="mt-3">Recent Assessments Submitted</h4>
+                {% if recent_assessments_submitted %}
+                    <ul>
+                        {% for assessment in recent_assessments_submitted %}
+                            <li>
+                                <strong>{{ assessment.assessed_client.name }}</strong> ({{ assessment.form_type | replace('_', ' ') | title }})
+                                <br>
+                                <span class="text-muted text-sm">Submitted: {{ assessment.submitted_at.strftime('%Y-%m-%d') }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No recent assessments submitted.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('forms_selection') }}" class="btn btn-primary btn-sm">Fill New Form</a>
+                <a href="{{ url_for('assessments_list') }}" class="btn btn-secondary btn-sm">View All Assessments</a> {# MODIFIED: Confirmed correct link #}
+            </div>
+        </div>
+
+        <!-- Assigned Tasks Card -->
+        <div class="dashboard-card tasks-card">
+            <h3 class="card-title">Assigned Tasks</h3>
+            <p>Tasks you have assigned to your clients.</p>
+            <div class="tasks-list mt-3">
+                {% if recent_assigned_tasks %}
+                    <ul>
+                        {% for task in recent_assigned_tasks %}
+                            <li>
+                                <strong>{{ task.title }}</strong> for <strong>{{ task.client_user.name }}</strong>
+                                <br>
+                                <span class="text-muted text-sm">Due: {{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'N/A' }}</span>
+                                <span class="status-{{ task.status }} ml-2">{{ task.status | capitalize }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No tasks assigned recently.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('tasks') }}" class="btn btn-primary btn-sm">Manage All Tasks</a>
+                <a href="{{ url_for('tasks') }}" class="btn btn-secondary btn-sm">Assign New Task</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

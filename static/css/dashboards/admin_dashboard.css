@@ -1,0 +1,164 @@
+/* static/css/dashboards/admin_dashboard.css */
+
+.dashboard-container {
+    padding: 2rem 1rem;
+    background-color: var(--color-background-light);
+    min-height: calc(100vh - 120px); /* Adjust based on header/footer height */
+}
+
+.dashboard-title {
+    font-size: 2.2rem;
+    color: var(--color-black);
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-dark);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    gap: 1.5rem; /* Spacing between cards */
+    grid-template-columns: 1fr; /* Single column on mobile */
+}
+
+.dashboard-card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Pushes actions to bottom if content varies */
+}
+
+.card-title {
+    font-size: 1.5rem;
+    color: var(--color-primary); /* Vibrant green for card titles */
+    margin-bottom: 0.75rem;
+}
+
+.dashboard-card p {
+    color: var(--color-text-dark);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem; /* Space above buttons */
+}
+
+.card-actions .btn {
+    flex-grow: 1; /* Buttons take up available space */
+}
+
+/* ADDED: User Statistics Grid */
+.user-stats-card .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.user-stats-card .stat-item {
+    background-color: var(--color-light-aqua); /* Light aqua background */
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-stats-card .stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-black);
+    line-height: 1.2;
+}
+
+.user-stats-card .stat-label {
+    font-size: 0.85rem;
+    color: var(--color-text-dark);
+    margin-top: 0.2rem;
+}
+
+
+/* MODIFIED: List styles for recent users, appointments, assessments */
+.user-list ul, .appointment-list ul, .assessment-list ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.user-list li, .appointment-list li, .assessment-list li {
+    background-color: #f0f0f0;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text-dark);
+}
+
+.user-list li:last-child, .appointment-list li:last-child, .assessment-list li:last-child {
+    margin-bottom: 0;
+}
+
+
+/* Tablet and Desktop adjustments */
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr); /* Two columns on tablets */
+    }
+}
+
+@media (min-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr); /* Three columns on larger desktops */
+    }
+    .user-stats-card .stats-grid { /* Adjust stats grid for larger screens */
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(4, 1fr); /* Four columns on very large screens */
+    }
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 575.98px) {
+    .dashboard-title {
+        font-size: 1.8rem;
+    }
+    .dashboard-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+    .dashboard-card {
+        padding: 1.2rem;
+        border-radius: 0.6rem;
+    }
+    .card-title {
+        font-size: 1.3rem;
+    }
+    .card-actions .btn {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+    }
+    .user-stats-card .stat-value {
+        font-size: 1.5rem;
+    }
+    .user-stats-card .stat-label {
+        font-size: 0.8rem;
+    }
+}

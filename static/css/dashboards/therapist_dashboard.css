@@ -1,0 +1,185 @@
+* static/css/dashboards/therapist_dashboard.css */
+
+/* Inherits general dashboard styles from admin_dashboard.css for consistency */
+/* You can copy and paste the common styles from admin_dashboard.css here,
+   or ensure admin_dashboard.css is linked BEFORE this file in base.html if you
+   want to share common styles and only override here. */
+
+.dashboard-container {
+    padding: 2rem 1rem;
+    background-color: var(--color-background-light);
+    min-height: calc(100vh - 120px);
+}
+
+.dashboard-title {
+    font-size: 2.2rem;
+    color: var(--color-black);
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-dark);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr; /* Single column on mobile */
+}
+
+.dashboard-card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    color: var(--color-primary); /* Vibrant green for card titles */
+    margin-bottom: 0.75rem;
+}
+
+.dashboard-card p {
+    color: var(--color-text-dark);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.card-actions .btn {
+    flex-grow: 1;
+}
+
+/* MODIFIED: List styles for patient list, appointments, forms, tasks */
+.patient-list ul, .appointment-list ul, .forms-overview ul, .tasks-list ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.patient-list li, .appointment-list li, .forms-overview li, .tasks-list li {
+    background-color: #f0f0f0;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Distribute content and button */
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+.patient-list li:last-child, .appointment-list li:last-child, .forms-overview li:last-child, .tasks-list li:last-child {
+    margin-bottom: 0;
+}
+
+.patient-list li .status-indicator {
+    display: inline-block; /* ADDED */
+    width: 10px; /* ADDED */
+    height: 10px; /* ADDED */
+    border-radius: 50%; /* ADDED */
+    margin-left: 0.5rem;
+    vertical-align: middle; /* ADDED */
+}
+
+.patient-list li .status-indicator.online {
+    background-color: var(--color-success); /* MODIFIED */
+}
+
+.patient-list li .status-indicator.offline {
+    background-color: var(--color-danger); /* MODIFIED */
+}
+
+.forms-overview ul li a {
+    color: var(--color-secondary); /* Muted purple for form links */
+    font-weight: 500;
+}
+
+.forms-overview ul li a:hover {
+    color: var(--color-accent); /* Pink on hover */
+}
+
+/* ADDED: Task status indicators */
+.status-pending {
+    background-color: #ffc107; /* Warning yellow */
+    color: #856404;
+    padding: 0.2em 0.5em;
+    border-radius: 0.3em;
+    font-size: 0.8em;
+}
+
+.status-completed {
+    background-color: #d4edda; /* Success green */
+    color: #155724;
+    padding: 0.2em 0.5em;
+    border-radius: 0.3em;
+    font-size: 0.8em;
+}
+
+.status-overdue {
+    background-color: #f8d7da; /* Danger red */
+    color: #721c24;
+    padding: 0.2em 0.5em;
+    border-radius: 0.3em;
+    font-size: 0.8em;
+}
+
+
+/* Tablet and Desktop adjustments */
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 575.98px) {
+    .dashboard-title {
+        font-size: 1.8rem;
+    }
+    .dashboard-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+    .dashboard-card {
+        padding: 1.2rem;
+        border-radius: 0.6rem;
+    }
+    .card-title {
+        font-size: 1.3rem;
+    }
+    .card-actions .btn {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+    }
+    .patient-list li {
+        flex-direction: column; /* Stack name/status and button on very small screens */
+        align-items: flex-start;
+    }
+    .patient-list li .btn {
+        margin-top: 0.5rem;
+        margin-left: 0 !important; /* Override ml-2 from base.css */
+        width: 100%;
+    }
+}

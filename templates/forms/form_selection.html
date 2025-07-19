@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Form - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms/form_selection.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="form-selection-container">
+    <h1 class="form-selection-title">Select Assessment Form</h1>
+    <p class="form-selection-subtitle">Choose the appropriate form to begin a new patient assessment.</p>
+
+    <div class="form-options-grid">
+        <div class="form-option-card">
+            <h3 class="card-title">Outpatient Clinic Therapist Form</h3>
+            <p>For detailed assessments conducted in an outpatient clinic setting.</p>
+            <a href="{{ url_for('outpatient_form') }}" class="btn btn-primary btn-block">Start Outpatient Form</a>
+        </div>
+
+        <div class="form-option-card">
+            <h3 class="card-title">Home Health Intake Form</h3>
+            <p>For initial intake and assessment in a home health setting.</p>
+            <a href="{{ url_for('home_health_form') }}" class="btn btn-secondary btn-block">Start Home Health Form</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

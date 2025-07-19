@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards/admin_dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="dashboard-title">Admin Dashboard</h1>
+    <p class="dashboard-subtitle">Welcome, {{ current_user.name }}! Here's an overview of the system.</p>
+
+    <div class="dashboard-grid">
+        <!-- User Statistics Card -->
+        <div class="dashboard-card user-stats-card">
+            <h3 class="card-title">User Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value">{{ total_users }}</span>
+                    <span class="stat-label">Total Users</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ total_clients }}</span>
+                    <span class="stat-label">Clients</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ total_therapists }}</span>
+                    <span class="stat-label">Therapists</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ total_caregivers }}</span>
+                    <span class="stat-label">Caregivers</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ total_admins }}</span>
+                    <span class="stat-label">Admins</span>
+                </div>
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('users_list') }}" class="btn btn-primary btn-sm">Manage Users</a> {# MODIFIED: Confirmed correct link #}
+                <a href="{{ url_for('link_caregiver') }}" class="btn btn-secondary btn-sm">Link Caregiver</a>
+            </div>
+        </div>
+
+        <!-- Recent Users Card -->
+        <div class="dashboard-card recent-users-card">
+            <h3 class="card-title">Recent Registrations</h3>
+            <div class="user-list mt-3">
+                {% if recent_users %}
+                    <ul>
+                        {% for user in recent_users %}
+                            <li>
+                                <strong>{{ user.name }}</strong> ({{ user.username }}) - <span class="role-badge role-{{ user.role }}">{{ user.role | capitalize }}</span>
+                                <span class="text-muted text-sm">{{ user.last_online.strftime('%Y-%m-%d') }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No recent users registered yet.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('users_list') }}" class="btn btn-secondary btn-sm">View All Users</a> {# MODIFIED: Confirmed correct link #}
+            </div>
+        </div>
+
+        <!-- Upcoming Appointments Card -->
+        <div class="dashboard-card appointment-card">
+            <h3 class="card-title">Upcoming Appointments</h3>
+            <div class="appointment-list mt-3">
+                {% if upcoming_appointments %}
+                    <ul>
+                        {% for appt in upcoming_appointments %}
+                            <li>
+                                <strong>{{ appt.client.name }}</strong> with <strong>{{ appt.therapist.name }}</strong>
+                                <br>
+                                <span class="text-muted text-sm">{{ appt.start_time.strftime('%Y-%m-%d %H:%M') }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No upcoming appointments.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('appointments') }}" class="btn btn-primary btn-sm">View All Appointments</a>
+            </div>
+        </div>
+
+        <!-- Recent Assessments Card -->
+        <div class="dashboard-card assessments-card">
+            <h3 class="card-title">Recent Assessments</h3>
+            <div class="assessment-list mt-3">
+                {% if recent_assessments %}
+                    <ul>
+                        {% for assessment in recent_assessments %}
+                            <li>
+                                <strong>{{ assessment.assessed_client.name }}</strong> ({{ assessment.form_type | replace('_', ' ') | title }})
+                                <br>
+                                <span class="text-muted text-sm">Submitted: {{ assessment.submitted_at.strftime('%Y-%m-%d') }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No recent assessments.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('assessments_list') }}" class="btn btn-secondary btn-sm">View All Assessments</a> {# MODIFIED: Confirmed correct link #}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

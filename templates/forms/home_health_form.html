@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Home Health Intake Form - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms/home_health_form.css') }}">
+    <!-- Re-use outpatient_form.css for common form styles if it's identical, or create specific -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms/outpatient_form.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="form-page-container">
+    <h1 class="form-page-title">GerioCare Home Health Intake Form</h1>
+    <p class="form-page-subtitle">Complete this form for initial client intake in a home health setting.</p>
+
+    <div class="form-card">
+        <form method="POST" action="{{ url_for('home_health_form') }}">
+
+            <!-- Client Selection -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Client Information
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content show"> {# Always show this section initially #}
+                    <div class="form-group">
+                        <label for="client_id" class="form-label">Select Client</label>
+                        <select id="client_id" name="client_id" class="form-control" required>
+                            <option value="">-- Select a Client --</option>
+                            {% for client in clients %}
+                                <option value="{{ client.id }}">{{ client.name }} ({{ client.username }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="full_name" class="form-label">Full Name</label>
+                        <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Client's Full Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                        <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="caregiver_name" class="form-label">Caregiver Name (if applicable)</label>
+                        <input type="text" id="caregiver_name" name="caregiver_name" class="form-control" placeholder="Caregiver's Name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Living Situation:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="lives_alone"> Lives alone</label>
+                            <label><input type="checkbox" name="with_spouse_partner"> With spouse/partner</label>
+                            <label><input type="checkbox" name="with_family"> With family</label>
+                            <label><input type="checkbox" name="assisted_living"> Assisted living</label>
+                            <label><input type="checkbox" name="other_living"> Other</label>
+                            <input type="text" name="other_living_specify" class="form-control mt-1" placeholder="Specify if 'Other'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Activities (Occupations) -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Daily Activities (Occupations)
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label class="form-label">Which self-care tasks do you do on your own? Which do you need help with?</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="bathing"> Bathing</label>
+                            <label><input type="checkbox" name="dressing"> Dressing</label>
+                            <label><input type="checkbox" name="toileting"> Toileting</label>
+                            <label><input type="checkbox" name="eating"> Eating</label>
+                            <label><input type="checkbox" name="grooming"> Grooming</label>
+                            <label><input type="checkbox" name="other_self_care"> Other</label>
+                            <input type="text" name="other_self_care_specify" class="form-control mt-1" placeholder="Specify if 'Other'">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Level of assistance:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="level_of_assistance" value="no_difficulty"> No difficulty</label>
+                            <label><input type="radio" name="level_of_assistance" value="some_difficulty"> Some difficulty</label>
+                            <label><input type="radio" name="level_of_assistance" value="need_full_help"> Need full help</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Any difficulties with cooking, cleaning, managing money, or shopping?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="difficulties_with_iadls" value="yes"> Yes</label>
+                            <label><input type="radio" name="difficulties_with_iadls" value="no"> No</label>
+                        </div>
+                        <textarea name="iadls_difficulties_details" class="form-control mt-1" rows="2" placeholder="If yes, please describe..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Environment & Support -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Home Environment & Support
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label for="who_lives_with_you" class="form-label">Who lives with you?</label>
+                        <input type="text" id="who_lives_with_you" name="who_lives_with_you" class="form-control" placeholder="e.g., Spouse, Children, Alone">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Do you have stairs, grab bars, or other home safety features?</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="stairs"> Stairs</label>
+                            <label><input type="checkbox" name="grab_bars"> Grab bars</label>
+                            <label><input type="checkbox" name="ramp"> Ramp</label>
+                            <label><input type="checkbox" name="none_safety"> None</label>
+                            <label><input type="checkbox" name="other_safety"> Other</label>
+                            <input type="text" name="other_safety_specify" class="form-control mt-1" placeholder="Specify if 'Other'">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Do you use any of the following?</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="walker"> Walker</label>
+                            <label><input type="checkbox" name="wheelchair"> Wheelchair</label>
+                            <label><input type="checkbox" name="cane"> Cane</label>
+                            <label><input type="checkbox" name="hearing_aid"> Hearing aid</label>
+                            <label><input type="checkbox" name="glasses"> Glasses</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health & Client Factors -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Health & Client Factors
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label for="health_conditions" class="form-label">Do you have any health conditions that affect your daily activities?</label>
+                        <textarea id="health_conditions" name="health_conditions" class="form-control" rows="3" placeholder="Describe any relevant health conditions..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="beliefs_values" class="form-label">Do any beliefs or values affect your routines or care preferences?</label>
+                        <textarea id="beliefs_values" name="beliefs_values" class="form-control" rows="3" placeholder="Describe any relevant beliefs or values..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Routines and Roles -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Daily Routines and Roles
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label for="typical_day" class="form-label">Describe a typical day (e.g. when you wake up, eat, take medications):</label>
+                        <textarea id="typical_day" name="typical_day" class="form-control" rows="4" placeholder="Describe your daily routine..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="important_roles" class="form-label">What roles are important to you? (e.g. grandparent, volunteer, etc.):</label>
+                        <textarea id="important_roles" name="important_roles" class="form-control" rows="3" placeholder="List important roles..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Your Goals for Therapy -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Your Goals for Therapy
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label for="goals_for_therapy" class="form-label">What would you like to improve or be able to do more easily?</label>
+                        <textarea id="goals_for_therapy" name="goals_for_therapy" class="form-control" rows="4" placeholder="Describe your therapy goals..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Care Preferences -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Care Preferences
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label for="preferred_time" class="form-label">Preferred time for therapy visits:</label>
+                        <input type="text" id="preferred_time" name="preferred_time" class="form-control" placeholder="e.g., Mornings, Afternoons, Specific days">
+                    </div>
+                    <div class="form-group">
+                        <label for="home_environment_info" class="form-label">Any important info about your home environment for the therapist to know?</label>
+                        <textarea id="home_environment_info" name="home_environment_info" class="form-control" rows="3" placeholder="e.g., Pets, specific access instructions, sensitive areas..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group form-submit-group">
+                <button type="submit" class="btn btn-primary btn-block">Submit Home Health Form</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Collapsible sections logic
+        const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+        collapsibleHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                if (content && content.classList.contains('collapsible-content')) {
+                    const isShown = content.classList.contains('show');
+                    if (isShown) {
+                        content.classList.remove('show');
+                        this.querySelector('.toggle-icon').classList.remove('fa-chevron-up');
+                        this.querySelector('.toggle-icon').classList.add('fa-chevron-down');
+                    } else {
+                        content.classList.add('show');
+                        this.querySelector('.toggle-icon').classList.remove('fa-chevron-down');
+                        this.querySelector('.toggle-icon').classList.add('fa-chevron-up');
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}My Tasks - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tasks/tasks.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="tasks-container">
+    <h1 class="tasks-title">Therapist Task Management</h1>
+    <p class="tasks-subtitle">Assign and manage tasks for your clients.</p>
+
+    <div class="dashboard-grid">
+        <!-- Assign New Task Card -->
+        <div class="card assign-task-card">
+            <h3 class="card-title">Assign New Task</h3>
+            <form id="assignTaskForm" action="{{ url_for('assign_task') }}" method="POST">
+                <div class="form-group">
+                    <label for="client_id" class="form-label">Assign to Client</label>
+                    <select id="client_id" name="client_id" class="form-control" required>
+                        <option value="">-- Select Client --</option>
+                        {% for client in clients %}
+                            <option value="{{ client.id }}">{{ client.name }} ({{ client.username }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="title" class="form-label">Task Title</label>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="e.g., Daily Walking Exercise" required>
+                </div>
+                <div class="form-group">
+                    <label for="description" class="form-label">Description (Optional)</label>
+                    <textarea id="description" name="description" class="form-control" rows="3" placeholder="Provide detailed instructions for the task."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="due_date" class="form-label">Due Date (Optional)</label>
+                    <input type="datetime-local" id="due_date" name="due_date" class="form-control">
+                </div>
+
+                {# MODIFIED: File upload inputs and preview area #}
+                <div class="form-group">
+                    <label for="image_file" class="form-label">Upload Image (Optional)</label>
+                    <input type="file" id="image_file" name="image_file" class="form-control" accept="image/*">
+                    <input type="hidden" id="uploaded_image_url" name="uploaded_image_url">
+                    <div id="image_preview" class="media-preview mt-2"></div>
+                </div>
+                <div class="form-group">
+                    <label for="video_file" class="form-label">Upload Video (Optional)</label>
+                    <input type="file" id="video_file" name="video_file" class="form-control" accept="video/*">
+                    <input type="hidden" id="uploaded_video_url" name="uploaded_video_url">
+                    <div id="video_preview" class="media-preview mt-2"></div>
+                </div>
+                {# END MODIFIED #}
+
+                <button type="submit" class="btn btn-primary btn-block">Assign Task</button>
+            </form>
+        </div>
+
+        <!-- Assigned Tasks List Card -->
+        <div class="card task-list-card">
+            <h3 class="card-title">Your Assigned Tasks</h3>
+            {% if assigned_tasks %}
+                <ul class="task-list">
+                    {% for task in assigned_tasks %}
+                        <li class="task-item">
+                            <div class="task-details">
+                                <p><strong>Title:</strong> {{ task.title }}</p>
+                                <p><strong>Client:</strong> {{ task.client_user.name }}</p>
+                                {% if task.description %}<p><strong>Description:</strong> {{ task.description }}</p>{% endif %}
+                                
+                                {# MODIFIED: Display uploaded media #}
+                                {% if task.image_url %}
+                                    <div class="task-media">
+                                        <p><strong>Illustration:</strong></p>
+                                        <img src="{{ task.image_url }}" alt="Task Illustration" class="task-thumbnail" onerror="this.onerror=null;this.src='{{ url_for('static', filename='images/image_placeholder.png') }}';"> {# ADDED: Error fallback #}
+                                    </div>
+                                {% endif %}
+                                {% if task.video_url %}
+                                    <div class="task-media">
+                                        <p><strong>Video Guide:</strong></p>
+                                        <div class="video-player-container"> {# MODIFIED: Changed class name #}
+                                            <video controls preload="metadata" class="task-video-player"> {# MODIFIED: Added controls, preload #}
+                                                <source src="{{ task.video_url }}" type="video/mp4"> {# Assuming MP4 for simplicity #}
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {# END MODIFIED #}
+
+                                <p><strong>Due Date:</strong> {{ task.due_date.strftime('%Y-%m-%d %H:%M') if task.due_date else 'N/A' }}</p>
+                                <p><strong>Status:</strong> <span class="status-{{ task.status }}">{{ task.status | capitalize }}</span></p>
+                                {% if task.completed_at %}<p><strong>Completed At:</strong> {{ task.completed_at.strftime('%Y-%m-%d %H:%M') }}</p>{% endif %}
+                            </div>
+                            <div class="task-actions">
+                                {# Add edit/delete buttons here if needed #}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted text-center">No tasks assigned yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_js %}
+    <script src="{{ url_for('static', filename='js/task_media_upload.js') }}"></script> {# NEW JS FILE #}
+{% endblock %}

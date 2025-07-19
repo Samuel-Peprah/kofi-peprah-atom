@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}About Us - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/static_content.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-center mb-4">About GerioCare</h1>
+    <p class="text-center text-secondary mb-5">
+        Empowering elderly care through innovative technology.
+    </p>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h3 class="mb-3 text-primary">Our Mission</h3>
+            <p>
+                At GerioCare, our mission is to revolutionize elderly care by providing a comprehensive, intuitive, and secure platform that connects clients, therapists, and caregivers. We believe in fostering a collaborative environment where communication is seamless, care plans are personalized, and well-being is prioritized.
+            </p>
+            <p>
+                We aim to empower individuals to live healthier, more independent lives by facilitating better access to care, streamlining task management, and enabling continuous assessment and support.
+            </p>
+
+            <h3 class="mb-3 text-primary mt-5">Our Vision</h3>
+            <p>
+                To be the leading digital platform for elderly care, recognized globally for our commitment to innovation, compassion, and excellence. We envision a future where every elderly individual receives the personalized attention and support they need to thrive, and where their care network operates with unparalleled efficiency and empathy.
+            </p>
+
+            <h3 class="mb-3 text-primary mt-5">Our Values</h3>
+            <ul>
+                <li><strong>Compassion:</strong> We approach every interaction with empathy and understanding.</li>
+                <li><strong>Innovation:</strong> We continuously seek new ways to improve care delivery through technology.</li>
+                <li><strong>Integrity:</strong> We operate with honesty, transparency, and the highest ethical standards.</li>
+                <li><strong>Collaboration:</strong> We believe in the power of teamwork and interconnected care networks.</li>
+                <li><strong>Empowerment:</strong> We strive to empower both care recipients and providers.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

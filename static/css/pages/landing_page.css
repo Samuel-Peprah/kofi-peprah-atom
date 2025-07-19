@@ -1,0 +1,323 @@
+/* landing_page.css */
+
+/* Variables (assuming these are defined in base.css or inherited) */
+:root {
+    --color-primary: #00D05A;
+    --color-secondary: #5E515A;
+    --color-background-light: #f8f9fa;
+    --color-text-dark: #333;
+    --color-white: #fff;
+    --shadow-small: 0 2px 4px rgba(0,0,0,0.1);
+    --border-radius-medium: 8px;
+    --color-primary-dark: #63B95F;
+    --color-light-aqua: #C3F3FF;
+}
+
+body {
+    background-color: var(--color-background-light);
+}
+
+.landing-page-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* --- Hero Section --- */
+.hero-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, var(--color-background-light) 0%, var(--color-primary-light) 100%);
+    width: 100%;
+    gap: 40px;
+}
+
+.hero-content {
+    max-width: 800px;
+}
+
+.hero-title {
+    font-size: 3.5em;
+    color: var(--color-primary-dark);
+    margin-bottom: 20px;
+    line-height: 1.2;
+    font-weight: 800;
+}
+
+.hero-subtitle {
+    font-size: 1.5em;
+    color: var(--color-secondary);
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.hero-description {
+    font-size: 1.1em;
+    color: var(--color-text-dark);
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-primary-hero,
+.btn-secondary-hero {
+    padding: 15px 30px;
+    font-size: 1.1em;
+    border-radius: var(--border-radius-medium);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-small);
+}
+
+.btn-primary-hero {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border: 1px solid var(--color-primary);
+}
+
+.btn-primary-hero:hover {
+    background-color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+}
+
+.btn-secondary-hero {
+    background-color: var(--color-white);
+    color: var(--color-secondary);
+    border: 1px solid var(--color-secondary);
+}
+
+.btn-secondary-hero:hover {
+    background-color: var(--color-secondary);
+    color: var(--color-white);
+    transform: translateY(-2px);
+}
+
+.welcome-message {
+    font-size: 1.2em;
+    color: var(--color-text-dark);
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* MODIFIED: Hero Visual Styling */
+.hero-visual {
+    width: 100%; /* Take full width of its container */
+    max-width: 450px; /* Limit overall size on larger screens */
+    margin-top: 20px; /* Add some space above the image */
+}
+
+.hero-visual img {
+    width: 100%; /* Image fills its container */
+    height: auto;
+    display: block; /* Remove extra space below image */
+    border-radius: var(--border-radius-medium);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+/* --- Features Section --- */
+.features-section {
+    padding: 80px 20px;
+    background-color: var(--color-white);
+    width: 100%;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2.5em;
+    color: var(--color-primary-dark);
+    margin-bottom: 40px;
+    font-weight: 700;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background-color: var(--color-background-light);
+    border-radius: var(--border-radius-medium);
+    padding: 30px;
+    box-shadow: var(--shadow-small);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.feature-icon {
+    font-size: 3em;
+    color: var(--color-primary);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--color-light-aqua);
+}
+
+.feature-icon svg {
+    width: 1.2em;
+    height: 1.2em;
+    color: var(--color-primary-dark);
+}
+
+.feature-card h3 {
+    font-size: 1.5em;
+    color: var(--color-text-dark);
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.feature-card p {
+    font-size: 1em;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+}
+
+/* --- Call to Action Section --- */
+.cta-section {
+    padding: 80px 20px;
+    background-color: var(--color-primary-dark);
+    color: var(--color-white);
+    text-align: center;
+    width: 100%;
+}
+
+.cta-content {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.cta-title {
+    color: var(--color-white);
+    margin-bottom: 25px;
+    font-size: 2.8em;
+    line-height: 1.3;
+}
+
+.cta-description {
+    font-size: 1.2em;
+    margin-bottom: 40px;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.btn-primary-cta {
+    background-color: var(--color-white);
+    color: var(--color-primary);
+    border: 1px solid var(--color-white);
+    padding: 18px 40px;
+    font-size: 1.2em;
+    border-radius: var(--border-radius-medium);
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-primary-cta:hover {
+    background-color: var(--color-light-aqua);
+    color: var(--color-primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 40px 15px;
+        gap: 30px;
+    }
+    .hero-title {
+        font-size: 2.5em;
+    }
+    .hero-subtitle {
+        font-size: 1.2em;
+    }
+    .hero-description {
+        font-size: 0.95em;
+    }
+    .hero-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .btn-primary-hero,
+    .btn-secondary-hero {
+        width: 80%;
+        max-width: 300px;
+        font-size: 1em;
+        padding: 12px 25px;
+    }
+    .welcome-message {
+        font-size: 1em;
+    }
+
+    /* MODIFIED: Hero Visual adjustments for small screens */
+    .hero-visual {
+        max-width: 250px; /* Make it smaller on small screens */
+        margin-top: 15px;
+    }
+
+    .features-section {
+        padding: 50px 15px;
+    }
+    .section-title {
+        font-size: 2em;
+        margin-bottom: 30px;
+    }
+    .feature-card {
+        padding: 25px;
+    }
+    .feature-icon {
+        font-size: 2.5em;
+        width: 50px;
+        height: 50px;
+    }
+    .feature-card h3 {
+        font-size: 1.3em;
+    }
+    .feature-card p {
+        font-size: 0.9em;
+    }
+
+    .cta-section {
+        padding: 50px 15px;
+    }
+    .cta-title {
+        font-size: 2em;
+    }
+    .cta-description {
+        font-size: 1em;
+    }
+    .btn-primary-cta {
+        font-size: 1.1em;
+        padding: 15px 30px;
+        width: 80%;
+        max-width: 300px;
+    }
+}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}My Alerts - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/alerts/alerts_list.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="alerts-container">
+    <h1 class="alerts-title">My Alerts</h1>
+    <p class="alerts-subtitle">Important notifications and updates for your account.</p>
+
+    <div class="card alert-list-card">
+        <h3 class="card-title">Recent Alerts</h3>
+        {% if alerts %}
+            <ul class="alert-list">
+                {% for alert in alerts %}
+                    <li class="alert-item {% if not alert.is_read %}unread{% endif %}">
+                        <div class="alert-icon">
+                            {% if alert.type == 'new_message' %}
+                                <i class="fas fa-envelope"></i>
+                            {% elif alert.type == 'appointment_scheduled' %}
+                                <i class="fas fa-calendar-alt"></i>
+                            {% elif alert.type == 'patient_online' %}
+                                <i class="fas fa-user-check"></i>
+                            {% elif alert.type == 'new_task' %}
+                                <i class="fas fa-tasks"></i>
+                            {% elif alert.type == 'task_completed' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle"></i>
+                            {% endif %}
+                        </div>
+                        <div class="alert-details">
+                            <p class="alert-message">{{ alert.message }}</p>
+                            <span class="alert-timestamp">{{ alert.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                        <div class="alert-actions">
+                            {% if not alert.is_read %}
+                                <form action="{{ url_for('mark_alert_read', alert_id=alert.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-secondary btn-sm">Mark as Read</button>
+                                </form>
+                            {% else %}
+                                <span class="read-status"><i class="fas fa-check"></i> Read</span>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted text-center">No alerts found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

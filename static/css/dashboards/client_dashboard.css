@@ -1,0 +1,172 @@
+/* static/css/dashboards/client_dashboard.css */
+
+/* Inherits general dashboard styles from admin_dashboard.css for consistency */
+/* Similar to therapist_dashboard.css, ensure common styles are in base.css or copied. */
+
+.dashboard-container {
+    padding: 2rem 1rem;
+    background-color: var(--color-background-light);
+    min-height: calc(100vh - 120px);
+}
+
+.dashboard-title {
+    font-size: 2.2rem;
+    color: var(--color-black);
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-dark);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr; /* Single column on mobile */
+}
+
+.dashboard-card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    color: var(--color-primary); /* Vibrant green for card titles */
+    margin-bottom: 0.75rem;
+}
+
+.dashboard-card p {
+    color: var(--color-text-dark);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.card-actions .btn {
+    flex-grow: 1;
+}
+
+/* MODIFIED: List styles for profile details, appointments, tasks, assessments */
+.profile-details p, .appointment-list ul li, .tasks-list ul li, .assessment-list ul li {
+    background-color: #f0f0f0;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text-dark);
+}
+
+.profile-details h4, .appointment-list h4, .tasks-list h4, .assessment-list h4 {
+    font-size: 1.1rem;
+    color: var(--color-secondary); /* Muted purple for sub-headings */
+    margin-bottom: 0.75rem;
+}
+
+.appointment-list ul, .tasks-list ul, .assessment-list ul { /* ADDED */
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.appointment-list ul li:last-child, .tasks-list ul li:last-child, .assessment-list ul li:last-child { /* ADDED */
+    margin-bottom: 0;
+}
+
+/* ADDED: Task status indicators (copied from therapist_dashboard.css for consistency) */
+.status-pending {
+    background-color: #ffc107; /* Warning yellow */
+    color: #856404;
+    padding: 0.2em 0.5em;
+    border-radius: 0.3em;
+    font-size: 0.8em;
+}
+
+.status-completed {
+    background-color: #d4edda; /* Success green */
+    color: #155724;
+    padding: 0.2em 0.5em;
+    border-radius: 0.3em;
+    font-size: 0.8em;
+}
+
+.status-overdue {
+    background-color: #f8d7da; /* Danger red */
+    color: #721c24;
+    padding: 0.2em 0.5em;
+    border-radius: 0.3em;
+    font-size: 0.8em;
+}
+
+/* Specific styling for task list items to align buttons */
+.tasks-list ul li { /* ADDED */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tasks-list ul li .btn { /* ADDED */
+    margin-left: auto; /* Push button to the right */
+    flex-shrink: 0; /* Don't shrink button */
+}
+
+
+/* Tablet and Desktop adjustments */
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 575.98px) {
+    .dashboard-title {
+        font-size: 1.8rem;
+    }
+    .dashboard-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+    .dashboard-card {
+        padding: 1.2rem;
+        border-radius: 0.6rem;
+    }
+    .card-title {
+        font-size: 1.3rem;
+    }
+    .card-actions .btn {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+    }
+    .tasks-list ul li { /* MODIFIED */
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .tasks-list ul li .btn { /* MODIFIED */
+        margin-top: 0.5rem;
+        margin-left: 0;
+        width: 100%;
+    }
+}

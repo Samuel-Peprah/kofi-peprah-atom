@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/static_content.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-center mb-4">Privacy Policy</h1>
+    <p class="text-center text-secondary mb-5">
+        Your privacy is critically important to us.
+    </p>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h3 class="mb-3 text-primary">Introduction</h3>
+            <p>
+                This Privacy Policy describes how GerioCare ("we," "us," or "our") collects, uses, and discloses your information in connection with your use of our website and services. We are committed to protecting your privacy and ensuring the security of your personal data.
+            </p>
+
+            <h3 class="mb-3 text-primary mt-5">Information We Collect</h3>
+            <p>We collect various types of information to provide and improve our services to you, including:</p>
+            <ul>
+                <li><strong>Personal Identifiable Information:</strong> Such as your name, email address, phone number, and role (client, therapist, caregiver) when you register an account or contact us.</li>
+                <li><strong>Health-Related Information:</strong> For clients, this may include assessment data, appointment details, and communication with your care team. This sensitive information is handled with the utmost care and security.</li>
+                <li><strong>Usage Data:</strong> Information on how the service is accessed and used (e.g., pages visited, time spent on pages, device information).</li>
+                <li><strong>Cookies and Tracking Technologies:</strong> We use cookies and similar tracking technologies to track the activity on our Service and hold certain information.</li>
+            </ul>
+
+            <h3 class="mb-3 text-primary mt-5">How We Use Your Information</h3>
+            <p>We use the collected data for various purposes:</p>
+            <ul>
+                <li>To provide and maintain our Service.</li>
+                <li>To notify you about changes to our Service.</li>
+                <li>To allow you to participate in interactive features of our Service when you choose to do so.</li>
+                <li>To provide customer care and support.</li>
+                <li>To monitor the usage of our Service.</li>
+                <li>To detect, prevent, and address technical issues.</li>
+                <li>To manage your account and provide personalized care.</li>
+            </ul>
+
+            <h3 class="mb-3 text-primary mt-5">Data Security</h3>
+            <p>
+                The security of your data is important to us, but remember that no method of transmission over the Internet or method of electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your Personal Data, we cannot guarantee its absolute security. We implement various security measures including encryption, access controls, and regular security audits.
+            </p>
+
+            <h3 class="mb-3 text-primary mt-5">Cookies</h3>
+            <p>
+                Cookies are small files placed on your device (computer or mobile device) that contain data, typically a unique identifier. They are widely used to "remember" you and your preferences, either for a single visit (through a "session cookie") or for multiple repeat visits (using a "persistent cookie").
+            </p>
+            <p>We use cookies for the following purposes:</p>
+            <ul>
+                <li><strong>Authentication:</strong> To identify you when you log in and keep you logged in.</li>
+                <li><strong>Preferences:</strong> To remember your settings and preferences.</li>
+                <li><strong>Security:</strong> For security features and to detect malicious activity.</li>
+                <li><strong>Analytics:</strong> To understand how our Service is used and to improve its performance.</li>
+            </ul>
+            <p>
+                You have the option to accept or refuse these cookies and know when a cookie is being sent to your device. If you choose to refuse our cookies, you may not be able to use some portions of our Service.
+            </p>
+
+            <h3 class="mb-3 text-primary mt-5">Changes to This Privacy Policy</h3>
+            <p>
+                We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes.
+            </p>
+
+            <h3 class="mb-3 text-primary mt-5">Contact Us</h3>
+            <p>
+                If you have any questions about this Privacy Policy, please contact us:
+            </p>
+            <ul>
+                <li>By email: <a href="mailto:privacy@geriocare.com">privacy@geriocare.com</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

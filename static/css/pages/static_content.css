@@ -1,0 +1,139 @@
+/* static_content.css */
+
+/* General styling for static content pages (About, Contact, Privacy, Terms) */
+
+.container.py-4 {
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+
+.text-center.mb-4 {
+    margin-bottom: 2rem; /* More space below main title */
+}
+
+.text-center.text-secondary.mb-5 {
+    margin-bottom: 3rem; /* More space below subtitle */
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -15px; /* Compensate for column padding */
+    margin-right: -15px;
+}
+
+.col-md-8.mx-auto {
+    flex: 0 0 100%; /* Default to full width on small screens */
+    max-width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (min-width: 768px) {
+    .col-md-8.mx-auto {
+        flex: 0 0 66.666667%; /* 2/3 width on medium screens */
+        max-width: 66.666667%;
+    }
+}
+
+h1 {
+    color: var(--color-primary); /* Use primary color for main titles */
+    font-size: 2.8em;
+    margin-bottom: 0.8em;
+}
+
+h3.mb-3.text-primary {
+    color: var(--color-primary-dark); /* Darker primary for section titles */
+    font-size: 1.8em;
+    margin-bottom: 1rem;
+    margin-top: 2.5rem; /* Space above new sections */
+}
+
+p {
+    font-size: 1.05em;
+    line-height: 1.7;
+    margin-bottom: 1.2em;
+    color: var(--color-text-dark);
+}
+
+ul {
+    list-style: disc;
+    margin-left: 25px;
+    margin-bottom: 1.5em;
+    color: var(--color-text-dark);
+}
+
+ul li {
+    margin-bottom: 0.5em;
+    line-height: 1.6;
+}
+
+/* Specific styling for contact info if present */
+.contact-info p {
+    margin-bottom: 0.8em;
+    font-size: 1.1em;
+}
+
+.contact-info i {
+    font-size: 1.2em;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+/* Form styling (if contact form is present) */
+form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+form .form-label {
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    display: block;
+}
+
+form .form-control {
+    padding: 0.8rem 1rem;
+    border-radius: var(--border-radius-medium);
+    border: 1px solid var(--color-border);
+    width: 100%;
+    font-size: 1em;
+}
+
+form .form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(0, 208, 90, 0.25);
+    outline: none;
+}
+
+form .btn-primary {
+    padding: 0.9rem 2rem;
+    font-size: 1.1em;
+    border-radius: var(--border-radius-large);
+    box-shadow: var(--shadow-small);
+}
+
+/* Ensure links within content are styled */
+.col-md-8.mx-auto a {
+    color: var(--color-link); /* Use a distinct link color */
+    text-decoration: underline;
+}
+
+.col-md-8.mx-auto a:hover {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+/* Small screen adjustments for text */
+@media (max-width: 576px) {
+    h1 {
+        font-size: 2em;
+    }
+    h3 {
+        font-size: 1.5em;
+    }
+    p, ul li {
+        font-size: 1em;
+    }
+}

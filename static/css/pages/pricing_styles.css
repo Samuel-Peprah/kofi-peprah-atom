@@ -1,0 +1,189 @@
+/* pricing_styles.css */
+
+/* Using variables that should be defined in base.css or self-defined if not */
+:root {
+    --color-primary: #00D05A;
+    --color-primary-dark: #63B95F;
+    --color-primary-light: #E0F7FA;
+    --color-accent: #DE50AA;
+    --color-white: #fff;
+    --color-background-light: #f8f9fa;
+    --color-background-alt: #eceff1;
+    --color-text-dark: #333;
+    --color-text-secondary: #666;
+    --color-border: #ced4da;
+    --shadow-small: 0 2px 4px rgba(0,0,0,0.1);
+    --border-radius-medium: 8px;
+    --border-radius-large: 12px;
+}
+
+.pricing-section {
+    padding: 60px 20px;
+    background-color: var(--color-background-light);
+    text-align: center;
+}
+
+.pricing-title {
+    font-size: 2.8em;
+    color: var(--color-primary);
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.pricing-subtitle {
+    font-size: 1.2em;
+    color: var(--color-text-secondary);
+    margin-bottom: 40px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.plan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+    justify-content: center;
+    align-items: stretch; /* Make cards same height */
+}
+
+.plan-card {
+    background-color: var(--color-white);
+    border-radius: var(--border-radius-large);
+    box-shadow: var(--shadow-small);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Push footer to bottom */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--color-border);
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.plan-header {
+    margin-bottom: 25px;
+}
+
+.plan-title {
+    font-size: 1.8em;
+    color: var(--color-primary-dark);
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.plan-price {
+    font-size: 2.5em;
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.plan-price span {
+    display: inline-block; /* Keep price and interval on same line */
+}
+
+.plan-interval {
+    font-size: 0.5em;
+    color: var(--color-text-secondary);
+    font-weight: 400;
+    vertical-align: super;
+}
+
+.plan-body {
+    flex-grow: 1; /* Allow body to take available space */
+    margin-bottom: 25px;
+}
+
+.plan-description {
+    font-size: 1em;
+    color: var(--color-text-secondary);
+    margin-bottom: 20px;
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+
+.plan-features li {
+    margin-bottom: 10px;
+    color: var(--color-text-dark);
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.plan-features li i {
+    color: var(--color-primary); /* Checkmark icon color */
+    font-size: 1.1em;
+}
+
+.plan-features li .fas.fa-video {
+    color: var(--color-accent); /* Video icon color */
+}
+
+.plan-features li .fas.fa-star {
+    color: gold; /* Star icon color */
+}
+
+.plan-footer {
+    margin-top: 20px;
+}
+
+.plan-subscribe-btn {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    border-radius: var(--border-radius-medium);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: 100%; /* Full width button */
+    font-weight: 600;
+}
+
+.plan-subscribe-btn:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+}
+
+.plan-subscribe-btn:disabled {
+    background-color: var(--color-border);
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .pricing-title {
+        font-size: 2.2em;
+    }
+    .pricing-subtitle {
+        font-size: 1em;
+    }
+    .plan-grid {
+        grid-template-columns: 1fr; /* Stack plans vertically on small screens */
+    }
+    .plan-card {
+        padding: 25px;
+    }
+    .plan-title {
+        font-size: 1.6em;
+    }
+    .plan-price {
+        font-size: 2em;
+    }
+    .plan-subscribe-btn {
+        padding: 12px 25px;
+        font-size: 1em;
+    }
+}

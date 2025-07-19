@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Outpatient Therapist Form - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms/outpatient_form.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="form-page-container">
+    <h1 class="form-page-title">GerioCare Outpatient Clinic Therapist Form</h1>
+    <p class="form-page-subtitle">Complete this form for detailed patient assessment.</p>
+
+    <div class="form-card">
+        <form method="POST" action="{{ url_for('outpatient_form') }}">
+
+            <!-- Client Selection -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Client Information & Referral
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content show"> {# Always show this section initially #}
+                    <div class="form-group">
+                        <label for="client_id" class="form-label">Select Patient</label>
+                        <select id="client_id" name="client_id" class="form-control" required>
+                            <option value="">-- Select a Client --</option>
+                            {% for client in clients %}
+                                <option value="{{ client.id }}">{{ client.name }} ({{ client.username }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_name" class="form-label">Patient Name</label>
+                        <input type="text" id="patient_name" name="patient_name" class="form-control" placeholder="Patient's Full Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dob" class="form-label">DOB</label>
+                        <input type="date" id="dob" name="dob" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="referral_source" class="form-label">Referral Source</label>
+                        <input type="text" id="referral_source" name="referral_source" class="form-control" placeholder="e.g., Physician, Self-Referral">
+                    </div>
+                    <div class="form-group">
+                        <label for="date_of_evaluation" class="form-label">Date of Evaluation</label>
+                        <input type="date" id="date_of_evaluation" name="date_of_evaluation" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="therapist_name" class="form-label">Therapist Name</label>
+                        <input type="text" id="therapist_name" name="therapist_name" class="form-control" value="{{ current_user.name }}" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Occupational Profile -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Occupational Profile
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label class="form-label">Areas of Occupation Impacted:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="adls"> ADLS</label>
+                            <label><input type="checkbox" name="iadls"> IADLS</label>
+                            <label><input type="checkbox" name="rest_and_sleep"> Rest and Sleep</label>
+                            <label><input type="checkbox" name="education"> Education</label>
+                            <label><input type="checkbox" name="work"> Work</label>
+                            <label><input type="checkbox" name="play"> Play</label>
+                            <label><input type="checkbox" name="leisure"> Leisure</label>
+                            <label><input type="checkbox" name="social_participation"> Social Participation</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Performance Skills (Observed Deficits):</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="motor_skills"> Motor Skills</label>
+                            <label><input type="checkbox" name="process_skills"> Process Skills</label>
+                            <label><input type="checkbox" name="social_interaction_skills"> Social Interaction Skills</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Performance Patterns (Noted):</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="habits"> Habits</label>
+                            <label><input type="checkbox" name="routines"> Routines</label>
+                            <label><input type="checkbox" name="roles"> Roles</label>
+                            <label><input type="checkbox" name="rituals"> Rituals</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Relevant Contexts:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="environmental"> Environmental</label>
+                            <label><input type="checkbox" name="personal"> Personal</label>
+                            <label><input type="checkbox" name="cultural"> Cultural</label>
+                            <label><input type="checkbox" name="temporal"> Temporal</label>
+                            <label><input type="checkbox" name="virtual"> Virtual</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Factors -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Client Factors
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label class="form-label">Factors Affecting Function:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="body_functions"> Body Functions</label>
+                            <label><input type="checkbox" name="body_structures"> Body Structures</label>
+                            <label><input type="checkbox" name="values"> Values</label>
+                            <label><input type="checkbox" name="beliefs"> Beliefs</label>
+                            <label><input type="checkbox" name="spirituality"> Spirituality</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention Plan -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Intervention Plan
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label class="form-label">Intervention Approaches:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="create_promote"> Create/Promote</label>
+                            <label><input type="checkbox" name="establish_restore"> Establish/Restore</label>
+                            <label><input type="checkbox" name="maintain"> Maintain</label>
+                            <label><input type="checkbox" name="modify"> Modify</label>
+                            <label><input type="checkbox" name="prevent"> Prevent</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="short_term_goals" class="form-label">Short-Term Goals:</label>
+                        <textarea id="short_term_goals" name="short_term_goals" class="form-control" rows="4" placeholder="Describe short-term goals..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="long_term_goals" class="form-label">Long-Term Goals:</label>
+                        <textarea id="long_term_goals" name="long_term_goals" class="form-control" rows="4" placeholder="Describe long-term goals..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="frequency_duration" class="form-label">Frequency & Duration:</label>
+                        <input type="text" id="frequency_duration" name="frequency_duration" class="form-control" placeholder="e.g., 3 times/week for 6 weeks">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress & Outcomes -->
+            <div class="form-section">
+                <h3 class="collapsible-header">
+                    Progress & Outcomes
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </h3>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label class="form-label">Outcome Tools Used:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="copm"> COPM</label>
+                            <label><input type="checkbox" name="gas"> GAS</label>
+                            <label><input type="checkbox" name="fim"> FIM</label>
+                            <label><input type="checkbox" name="observation"> Observation</label>
+                            <label><input type="checkbox" name="other_outcome_tool"> Other</label>
+                            <input type="text" name="other_outcome_tool_specify" class="form-control mt-1" placeholder="Specify if 'Other'">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="discharge_plan" class="form-label">Discharge Plan:</label>
+                        <textarea id="discharge_plan" name="discharge_plan" class="form-control" rows="4" placeholder="Describe discharge plan..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group form-submit-group">
+                <button type="submit" class="btn btn-primary btn-block">Submit Outpatient Form</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Collapsible sections logic
+        const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+        collapsibleHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                if (content && content.classList.contains('collapsible-content')) {
+                    const isShown = content.classList.contains('show');
+                    if (isShown) {
+                        content.classList.remove('show');
+                        this.querySelector('.toggle-icon').classList.remove('fa-chevron-up');
+                        this.querySelector('.toggle-icon').classList.add('fa-chevron-down');
+                    } else {
+                        content.classList.add('show');
+                        this.querySelector('.toggle-icon').classList.remove('fa-chevron-down');
+                        this.querySelector('.toggle-icon').classList.add('fa-chevron-up');
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

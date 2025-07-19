@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to GerioCare{% endblock %}
+
+{% block head_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/landing_page.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="landing-page-main">
+    {# Hero Section: Engaging Introduction #}
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome to GerioCare</h1>
+            <p class="hero-subtitle">Your personalized journey to Physical, Occupational, and Mental well-being through assigned personalized activities.</p>
+            <p class="hero-description">Join our vibrant community of clients and therapists dedicated to improving health and wellness through assigned personalized activities and expert guidance.</p>
+            <div class="hero-actions">
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-primary-hero">Get Started Today</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-secondary-hero">Log In</a>
+                {% else %}
+                    <p class="welcome-message">Welcome back, {{ current_user.username }}!</p>
+                    {% if current_user.role == 'client' %}
+                        {# If client, check subscription status #}
+                        {% if user_has_active_subscription %}
+                            <a href="{{ url_for('client_dashboard') }}" class="btn btn-primary-hero">Go to Dashboard</a>
+                        {% else %}
+                            <a href="{{ url_for('pricing') }}" class="btn btn-primary-hero">Subscribe to a Plan</a>
+                        {% endif %}
+                    {% elif current_user.role == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary-hero">Go to Dashboard</a>
+                    {% elif current_user.role == 'therapist' %}
+                        <a href="{{ url_for('therapist_dashboard') }}" class="btn btn-primary-hero">Go to Dashboard</a>
+                    {% elif current_user.role == 'caregiver' %}
+                        <a href="{{ url_for('caregiver_dashboard') }}" class="btn btn-primary-hero">Go to Dashboard</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="hero-visual">
+            <img src="{{ url_for('static', filename='images/gerio_care_logo.png') }}" alt="GerioCare Wellness Illustration">
+        </div>
+    </section>
+
+    {# Features Section: Highlighting Key Benefits for GerioCare #}
+    <section class="features-section">
+        <h2 class="section-title">GerioCare Offers:</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-clipboard-list"></i> {# Icon for personalized plans/tasks #}
+                </div>
+                <h3>Personalized Care Plans & Tasks</h3>
+                <p>Receive tailored therapy tasks and comprehensive care plans designed by your dedicated therapist to support your specific needs and goals.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-comments"></i> {# Icon for communication #}
+                </div>
+                <h3>Seamless Communication</h3>
+                <p>Stay connected with your therapists and caregivers through secure in-app messaging, ensuring real-time support and coordination.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i> {# Icon for progress tracking #}
+                </div>
+                <h3>Progress Tracking & Insights</h3>
+                <p>Monitor your progress on assigned tasks and assessments with intuitive tracking tools, helping you visualize your journey to better health.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-alt"></i> {# Icon for appointment management #}
+                </div>
+                <h3>Integrated Appointment Management</h3>
+                <p>Easily view and manage your scheduled therapy appointments, ensuring you never miss a session with your care provider.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-hands-helping"></i> {# Icon for caregiver collaboration #}
+                </div>
+                <h3>Collaborative Care for Caregivers</h3>
+                <p>Empower your care team! Caregivers can manage client tasks, view appointments, and stay informed about care plans for their loved ones.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i> {# Icon for alerts #}
+                </div>
+                <h3>Real-time Alerts & Notifications</h3>
+                <p>Receive instant alerts for new messages, upcoming appointments, assigned tasks, and important updates relevant to your care.</p>
+            </div>
+        </div>
+    </section>
+
+    {# Call to Action Section: Driving Engagement #}
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2 class="section-title cta-title">Ready to connect with your Therapist and Transform Your Well-being?</h2>
+            <p class="cta-description">Sign up today and take the first step towards a healthier mind and body with GerioCare. Unlock premium features and connect with specialists.</p>
+            {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary-cta">Join GerioCare Now</a>
+            {% else %}
+                {# If authenticated, prompt clients to subscribe, others to their dashboard #}
+                {% if current_user.role == 'client' and not user_has_active_subscription %}
+                    <a href="{{ url_for('pricing') }}" class="btn btn-primary-cta">Explore Subscription Plans</a>
+                {% else %}
+                    <a href="{{ url_for('index') }}" class="btn btn-primary-cta">Go to Dashboard</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </section>
+</main>
+{% endblock %}
+

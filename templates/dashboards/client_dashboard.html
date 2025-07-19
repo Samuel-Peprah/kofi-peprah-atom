@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Client Dashboard - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboards/client_dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="dashboard-title">Client Dashboard</h1>
+    <p class="dashboard-subtitle">Welcome, {{ current_user.name }}! Here's your personalized overview.</p>
+
+    <div class="dashboard-grid">
+        <!-- Profile & Care Team Info Card -->
+        <div class="dashboard-card profile-card">
+            <h3 class="card-title">My Profile & Care Team</h3>
+            <p>View your personal details and contact your care team.</p>
+            <div class="profile-details mt-3">
+                <h4>Personal Details</h4>
+                <p><strong>Name:</strong> {{ current_user.name }}</p>
+                <p><strong>Username:</strong> {{ current_user.username }}</p>
+                <p><strong>Email:</strong> {{ current_user.email }}</p>
+                <h4>Care Team</h4>
+                <h5 class="mt-3">Therapists</h5>
+                {% if linked_therapists %}
+                    <ul>
+                        {% for therapist in linked_therapists %}
+                            <li><strong>{{ therapist.name }}</strong> ({{ therapist.username }})</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No therapist linked yet.</p>
+                {% endif %}
+                <h5 class="mt-3">Caregivers</h5>
+                {% if linked_caregivers %}
+                    <ul>
+                        {% for caregiver in linked_caregivers %}
+                            <li><strong>{{ caregiver.name }}</strong> ({{ caregiver.username }})</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No caregiver linked yet.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('profile_edit') }}" class="btn btn-primary btn-sm">Edit Profile</a>
+                <a href="{{ url_for('messages') }}" class="btn btn-secondary btn-sm">Message Team</a>
+            </div>
+        </div>
+
+        <!-- Upcoming Appointments Card -->
+        <div class="dashboard-card appointment-card">
+            <h3 class="card-title">Upcoming Appointments</h3>
+            <p>Your scheduled therapy sessions.</p>
+            <div class="appointment-list mt-3">
+                {% if upcoming_appointments %}
+                    <ul>
+                        {% for appt in upcoming_appointments %}
+                            <li>
+                                <strong>{{ appt.therapist.name }}</strong>
+                                <br>
+                                <span class="text-muted text-sm">{{ appt.start_time.strftime('%Y-%m-%d %H:%M') }}</span>
+                                <span class="status-{{ appt.status }} ml-2">{{ appt.status | capitalize }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No upcoming appointments.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('appointments') }}" class="btn btn-primary btn-sm">View All Appointments</a>
+            </div>
+        </div>
+
+        <!-- Tasks & Activities Card -->
+        <div class="dashboard-card tasks-card">
+            <h3 class="card-title">My Tasks & Activities</h3>
+            <p>Assigned tasks and progress tracking.</p>
+            <div class="tasks-list mt-3">
+                {% if assigned_tasks %}
+                    <ul>
+                        {% for task in assigned_tasks %}
+                            <li>
+                                <strong>{{ task.title }}</strong>
+                                <br>
+                                <span class="text-muted text-sm">Due: {{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'N/A' }}</span>
+                                <span class="status-{{ task.status }} ml-2">{{ task.status | capitalize }}</span>
+                                {% if task.status == 'pending' %}
+                                    <form action="{{ url_for('mark_task_complete', task_id=task.id) }}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-success btn-sm ml-2">Mark Complete</button>
+                                    </form>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No pending tasks.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('tasks') }}" class="btn btn-primary btn-sm">View All Tasks</a>
+            </div>
+        </div>
+
+        <!-- Recent Assessments Card -->
+        <div class="dashboard-card assessments-card">
+            <h3 class="card-title">My Assessments</h3>
+            <p>View your past patient assessments.</p>
+            <div class="assessment-list mt-3">
+                {% if recent_assessments_for_client %}
+                    <ul>
+                        {% for assessment in recent_assessments_for_client %}
+                            <li>
+                                <strong>{{ assessment.form_type | replace('_', ' ') | title }}</strong>
+                                <br>
+                                <span class="text-muted text-sm">Submitted: {{ assessment.submitted_at.strftime('%Y-%m-%d') }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No assessments found for you.</p>
+                {% endif %}
+            </div>
+            <div class="card-actions mt-3">
+                <a href="{{ url_for('assessments_list') }}" class="btn btn-secondary btn-sm">View All Assessments</a> {# MODIFIED: Confirmed correct link #}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

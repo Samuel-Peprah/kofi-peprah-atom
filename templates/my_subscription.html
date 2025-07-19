@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}My Subscription - GerioCare App{% endblock %}
+
+{% block head_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/my_subscription.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-subscription-page">
+    <h1 class="page-title">My Subscription Details</h1>
+
+    {% if subscription %}
+    <div class="subscription-details-card">
+        <h3 class="card-title">Current Plan: <span class="plan-name">{{ subscription.plan.name }}</span></h3>
+        <p><strong>Subscribed On:</strong> {{ subscription.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p><strong>Expires On:</strong> {{ subscription.expires_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p><strong>Status:</strong> <span class="status-badge status-{{ subscription.status }}">{{ subscription.status | capitalize }}</span></p>
+
+        {% if subscription.expires_at < now %} {# 'now' is from context processor #}
+            <p class="status-message expired">Your subscription has expired. Please renew to continue accessing content.</p>
+            <a href="{{ url_for('pricing') }}" class="btn btn-primary mt-3">Renew Your Plan</a>
+        {% else %}
+            <p class="status-message active">Your subscription is currently active!</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="no-subscription-card">
+        <p>You currently do not have an active subscription.</p>
+        <a href="{{ url_for('pricing') }}" class="btn btn-primary mt-3">Browse Plans</a>
+    </div>
+    {% endif %}
+
+    <hr class="section-divider">
+
+    <div class="fancy-section">
+        <h2 class="section-heading">Subscribe for higher plans to explore more personalized therapy contents</h2>
+        <div class="static-media-gallery">
+            {# Placeholder for static images/videos. Ensure these paths are correct in static/images/ #}
+            <img src="{{ url_for('static', filename='images/subscribe_img1.jpeg') }}" alt="Therapy Session 1" class="gallery-item">
+            <img src="{{ url_for('static', filename='images/subscribe_img2.jpeg') }}" alt="Therapy Session 2" class="gallery-item">
+            <img src="{{ url_for('static', filename='images/subscribe_img3.jpeg') }}" alt="Therapy Session 3" class="gallery-item">
+            <img src="{{ url_for('static', filename='images/subscribe_vid1.jpeg') }}" alt="Therapy Video Thumbnail" class="gallery-item">
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile/profile_edit.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-edit-container">
+    <h1 class="profile-edit-title">Edit Your Profile</h1>
+    <p class="profile-edit-subtitle">Update your personal information and password.</p>
+
+    <div class="profile-edit-card">
+        <form method="POST" action="{{ url_for('profile_edit') }}">
+            <h3 class="section-title">Personal Information</h3>
+            <div class="form-group">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ user.name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" value="{{ user.username }}" required>
+            </div>
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
+            </div>
+
+            <h3 class="section-title mt-4">Change Password</h3>
+            <p class="text-muted mb-3">Leave password fields blank if you don't want to change your password.</p>
+            <div class="form-group">
+                <label for="current_password" class="form-label">Current Password</label>
+                <input type="password" id="current_password" name="current_password" class="form-control" placeholder="Enter your current password">
+            </div>
+            <div class="form-group">
+                <label for="new_password" class="form-label">New Password</label>
+                <input type="password" id="new_password" name="new_password" class="form-control" placeholder="Enter new password">
+            </div>
+            <div class="form-group">
+                <label for="confirm_password" class="form-label">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Confirm new password">
+            </div>
+
+            <div class="form-group form-submit-group">
+                <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,174 @@
+/* static/css/dashboards/caregiver_dashboard.css */
+
+/* Inherits common dashboard styles from base.css and other dashboard CSS for consistency */
+
+.dashboard-container {
+    padding: 2rem 1rem;
+    background-color: var(--color-background-light);
+    min-height: calc(100vh - 120px);
+}
+
+.dashboard-title {
+    font-size: 2.2rem;
+    color: var(--color-black);
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+    font-size: 1.1rem;
+    color: var(--color-text-dark);
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.dashboard-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr; /* Single column on mobile */
+}
+
+.dashboard-card {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-title {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+    margin-bottom: 0.75rem;
+}
+
+.dashboard-card p {
+    color: var(--color-text-dark);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.card-actions .btn {
+    flex-grow: 1;
+}
+
+/* List styles for clients, appointments, tasks, assessments */
+.client-list ul, .appointment-list ul, .tasks-list ul, .assessment-list ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.client-list li, .appointment-list li, .tasks-list li, .assessment-list li {
+    background-color: #f0f0f0;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.client-list li:last-child, .appointment-list li:last-child, .tasks-list li:last-child, .assessment-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* Status indicator (copied from base.css/other dashboard CSS) */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.status-indicator.online {
+    background-color: var(--color-success);
+}
+
+.status-indicator.offline {
+    background-color: var(--color-danger);
+}
+
+/* Task status indicators (copied from tasks.css for consistency) */
+.status-pending {
+    background-color: #ffc107;
+    color: #856404;
+    padding: 0.2em 0.5em;
+    border-radius: 0.3em;
+    font-size: 0.8em;
+}
+
+.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 0.2em 0.5em;
+    border-radius: 0.3em;
+    font-size: 0.8em;
+}
+
+.status-overdue {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 0.2em 0.5em;
+    border-radius: 0.3em;
+    font-size: 0.8em;
+}
+
+
+/* Tablet and Desktop adjustments */
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 575.98px) {
+    .dashboard-title {
+        font-size: 1.8rem;
+    }
+    .dashboard-subtitle {
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+    .dashboard-card {
+        padding: 1.2rem;
+        border-radius: 0.6rem;
+    }
+    .card-title {
+        font-size: 1.3rem;
+    }
+    .card-actions .btn {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+    }
+    .client-list li, .appointment-list li, .tasks-list li, .assessment-list li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .client-list li .btn, .tasks-list li .btn {
+        margin-top: 0.5rem;
+        margin-left: 0 !important;
+        width: 100%;
+    }
+}

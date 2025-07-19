@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing - GerioCare App{% endblock %}
+
+{% block head_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/pricing_styles.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="pricing-section">
+    <h1 class="pricing-title">Choose Your Path to Well-being</h1>
+    <p class="pricing-subtitle">Unlock full access to curated content and tools for your personalized journey.</p>
+
+    <div class="plan-grid">
+        {% for p in plans %}
+            <div class="plan-card">
+                <div class="plan-header">
+                    <h3 class="plan-title">{{ p.name }}</h3>
+                    <p class="plan-price">
+                        <span>GH¢ {{ "%.2f"|format(p.amount_pesewas/100) }}</span>
+                        <span class="plan-interval"> / {{ p.interval_days }} days</span>
+                    </p>
+                </div>
+                <div class="plan-body">
+                    <p class="plan-description">{{ p.description }}</p>
+                    <ul class="plan-features">
+                        {% if p.name == "Monthly Plan" %}
+                        <li><i class="fas fa-check-circle"></i> Full Access to GerioCare Application</li>
+                        <li><i class="fas fa-clipboard-list"></i> Personalized Assigned Tasks</li>
+                        <li><i class="fas fa-comments"></i> Direct Messaging with Therapist/Caregiver</li>
+                        <li><i class="fas fa-bell"></i> Essential Alerts & Notifications</li>
+                        {% elif p.name == "Quarterly Plan" %}
+                        <li><i class="fas fa-check-circle"></i> All Monthly Plan Features</li>
+                        <li><i class="fas fa-chart-line"></i> Comprehensive Progress Tracking</li>
+                        <li><i class="fas fa-calendar-alt"></i> Integrated Appointment Management</li>
+                        <li><i class="fas fa-file-alt"></i> Access to Patient Assessments</li>
+                        <li><i class="fas fa-user-plus"></i> Link with a Caregiver (if applicable)</li>
+                        {% elif p.name == "Annual Plan" %}
+                        <li><i class="fas fa-check-circle"></i> All Quarterly Plan Features</li>
+                        {# <li><i class="fas fa-video"></i> Exclusive Live Video Therapy Sessions</li> #}
+                        <li><i class="fas fa-headset"></i> Priority Support from Therapists & IT</li>
+                        <li><i class="fas fa-shield-alt"></i> Enhanced Data Security & Privacy</li>
+                        <li><i class="fas fa-star"></i> Premium Content & Resources</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="plan-footer">
+                    <button
+                        class="btn plan-subscribe-btn"
+                        data-plan="{{ p.id }}"
+                        data-amount="{{ p.amount_pesewas }}"
+                        data-name="{{ p.name }}"
+                        {% if not current_user.is_authenticated %}disabled title="Please log in to subscribe"{% endif %}>
+                        Subscribe Now
+                    </button>
+                    {% if not current_user.is_authenticated %}
+                        <p class="text-muted mt-2">Please <a href="{{ url_for('login') }}">log in</a> to subscribe.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block body_js %}
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const subscribeButtons = document.querySelectorAll('.plan-subscribe-btn');
+
+    // Get current user's authentication status and role from Jinja context
+    const isAuthenticated = {{ current_user.is_authenticated | tojson }};
+    const currentUserRole = "{{ current_user.role if current_user.is_authenticated else '' }}"; // Get role as string
+
+    subscribeButtons.forEach(btn => {
+        btn.onclick = () => {
+            // Client-side check for authentication
+            if (!isAuthenticated) {
+                alert("Please log in to subscribe to a plan.");
+                window.location.href = "{{ url_for('login') }}";
+                return;
+            }
+            
+            // Client-side check for client role
+            if (currentUserRole !== 'client') {
+                alert("Only clients can subscribe to plans.");
+                return;
+            }
+
+            const planId = btn.dataset.plan;
+            const amount = btn.dataset.amount;
+            const planName = btn.dataset.name;
+            const userEmail = "{{ current_user.email if current_user.is_authenticated else '' }}"; // Ensure email is available
+
+            const handler = PaystackPop.setup({
+                key: "{{ pub_key }}", // Public key from Flask context
+                email: userEmail, // User's email from Flask-Login
+                amount: amount, // Amount in pesewas
+                currency: "GHS",
+                channels: ['mobile_money', 'card'],
+                metadata: {
+                    custom_fields: [
+                        { display_name: "Plan", value: planName },
+                        { display_name: "User ID", value: "{{ current_user.id if current_user.is_authenticated else '' }}" }
+                    ]
+                },
+                callback: function(response) {
+                    // Payment successful, now verify with backend
+                    fetch("{{ url_for('verify_payment') }}", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ref: response.reference, plan_id: planId })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert("Payment successful! Your subscription is now active.");
+                            window.location.href = "{{ url_for('client_dashboard') }}"; // Redirect to dashboard
+                        } else {
+                            alert("Payment verification failed: " + (data.error || "Unknown error."));
+                            console.error("Verification error:", data.error);
+                            window.location.reload(); // Reload to show flash message
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error during verification fetch:", error);
+                        alert("An error occurred during payment verification. Please try again.");
+                        window.location.reload();
+                    });
+                },
+                onClose: function() {
+                    alert("Payment window closed.");
+                }
+            });
+            handler.openIframe();
+        };
+    });
+});
+</script>
+{% endblock %}

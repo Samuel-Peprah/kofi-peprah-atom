@@ -1,0 +1,351 @@
+* messages.css */
+
+/* --- Self-contained CSS Variables for messages.css --- */
+/* These are defined here to ensure messages.css functions correctly
+   without relying on specific variable definitions in base.css.
+   Values are chosen to be consistent with common UI practices and your existing palette. */
+:root {
+    /* Colors */
+    --color-primary: #00D05A; /* Vibrant Green (from your base.css) */
+    --color-primary-dark: #63B95F; /* Darker Green (from your base.css) */
+    --color-primary-light: #E0F7FA; /* Light Blue-Green for active/sent messages */
+    --color-accent: #DE50AA; /* Pink/Magenta (from your base.css) */
+    --color-accent-light: #ffebeb; /* Lighter pink for unread badges/items */
+    --color-white: #fff; /* White */
+    --color-background-light: #f8f9fa; /* General light background */
+    --color-background-alt: #eceff1; /* Alternative light background for received messages */
+    --color-background-hover: #e0e0e0; /* Hover state background for list items */
+    --color-text-dark: #333; /* Dark text */
+    --color-text-secondary: #666; /* Secondary text color (e.g., subtitles, roles) */
+    --color-text-muted: #999; /* Muted text color (e.g., timestamps) */
+    --color-border: #ced4da; /* General border color */
+    --color-border-light: #eee; /* Lighter border for list item separators */
+    --color-success: #28a745; /* Success indicator color */
+    --color-danger: #dc3545; /* Danger/error indicator color */
+
+    /* Border Radii */
+    --border-radius-small: 5px;
+    --border-radius-medium: 8px;
+    --border-radius-large: 12px;
+
+    /* Shadows */
+    --shadow-extra-small: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-small: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-medium: 0 4px 8px rgba(0,0,0,0.15);
+
+    /* Layout Heights (approximate, adjust if your actual header/footer are different) */
+    --header-height: 60px; /* Assuming a typical fixed header height */
+    --footer-height: 50px; /* Assuming a typical fixed footer height */
+}
+
+/* --- Main Container Styling --- */
+.messages-container {
+    display: flex;
+    flex-direction: column;
+    /* Calculate height to fill available viewport space, accounting for header/footer */
+    height: calc(100vh - var(--header-height) - var(--footer-height) - 40px); /* 40px for top/bottom margin */
+    max-width: 1200px;
+    margin: 20px auto; /* Center the container with vertical margin */
+    padding: 20px;
+    background-color: var(--color-background-light);
+    border-radius: var(--border-radius-large);
+    box-shadow: var(--shadow-medium);
+    overflow: hidden; /* Prevent content from spilling out */
+}
+
+.messages-title {
+    color: var(--color-primary);
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 2.2em;
+    font-weight: 700;
+}
+
+.messages-subtitle {
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 1.1em;
+}
+
+/* --- Layout of Panels (Conversation List & Message Display) --- */
+.messages-layout {
+    display: flex;
+    flex-grow: 1; /* Allow this layout to take up remaining vertical space */
+    gap: 20px; /* Space between the two main panels */
+    flex-direction: column; /* Default to column stacking on small screens */
+}
+
+.conversation-list-panel,
+.message-display-panel {
+    background-color: var(--color-white);
+    border-radius: var(--border-radius-medium);
+    box-shadow: var(--shadow-small);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Allow both panels to grow and shrink */
+    min-height: 150px; /* Ensure panels are not completely missing */
+}
+
+.conversation-list-panel {
+    /* On small screens, limit height and make it scrollable */
+    max-height: 300px; /* Give enough height to see a few conversations */
+    overflow-y: auto;
+}
+
+.panel-title {
+    color: var(--color-primary-dark);
+    margin-bottom: 15px;
+    font-size: 1.5em;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 10px;
+}
+
+/* --- Conversation List Styling --- */
+.conversation-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.conversation-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--color-border-light);
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    border-radius: var(--border-radius-small);
+    margin-bottom: 5px; /* Space between items */
+    position: relative;
+}
+
+.conversation-item:last-child {
+    border-bottom: none; /* No border for the last item */
+}
+
+.conversation-item:hover {
+    background-color: var(--color-background-hover);
+    transform: translateY(-2px); /* Slight lift on hover */
+}
+
+.conversation-item.active {
+    background-color: var(--color-primary); /* Active item uses primary color */
+    color: var(--color-white);
+    box-shadow: var(--shadow-extra-small);
+    transform: translateY(0); /* Reset transform for active state */
+}
+
+.conversation-item.active .user-name,
+.conversation-item.active .user-role,
+.conversation-item.active .user-avatar {
+    color: var(--color-white); /* White text/icon for active item */
+}
+
+.conversation-item.unread {
+    font-weight: bold;
+    background-color: var(--color-accent-light); /* Lighter accent for unread */
+}
+
+.user-avatar {
+    margin-right: 12px;
+    font-size: 2.2em; /* Slightly larger icon */
+    color: var(--color-primary);
+}
+
+.user-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: bold;
+    color: var(--color-text-dark);
+}
+
+.user-role {
+    font-size: 0.85em;
+    color: var(--color-text-secondary);
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 8px;
+    display: inline-block;
+    border: 1px solid var(--color-white); /* Small white border for visibility */
+}
+
+.status-indicator.online {
+    background-color: var(--color-success);
+}
+
+.status-indicator.offline {
+    background-color: var(--color-danger);
+}
+
+.unread-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: var(--color-danger);
+    color: var(--color-white);
+    border-radius: 50%;
+    padding: 4px 8px;
+    font-size: 0.7em;
+    min-width: 24px; /* Ensure badge is round */
+    text-align: center;
+    line-height: 1;
+    box-shadow: var(--shadow-extra-small);
+}
+
+/* --- Message Display Area Styling --- */
+.message-display-panel {
+    flex-grow: 2; /* Message panel takes more space than conversation list */
+}
+
+.message-header {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--color-text-dark);
+}
+
+.message-area {
+    flex-grow: 1; /* Allow message area to fill available space */
+    overflow-y: auto; /* Enable vertical scrolling for messages */
+    padding-right: 10px; /* Space for scrollbar */
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column; /* Stack messages vertically */
+    gap: 8px; /* Space between message bubbles */
+}
+
+#noConversationSelected {
+    text-align: center;
+    color: var(--color-text-secondary);
+    margin-top: 50px;
+    font-style: italic;
+}
+
+.message-bubble {
+    max-width: 80%;
+    padding: 10px 15px;
+    border-radius: var(--border-radius-medium);
+    line-height: 1.4;
+    position: relative;
+    word-wrap: break-word; /* Ensure long words break */
+    font-size: 0.95em;
+}
+
+.message-sent {
+    background-color: var(--color-primary-light);
+    color: var(--color-white);
+    align-self: flex-end; /* Align to right */
+    border-bottom-right-radius: var(--border-radius-small); /* Sharper corner at bottom-right */
+    border-top-right-radius: var(--border-radius-medium);
+    border-bottom-left-radius: var(--border-radius-medium);
+    border-top-left-radius: var(--border-radius-medium);
+}
+
+.message-received {
+    background-color: var(--color-accent-light);
+    color: var(--color-text-dark);
+    align-self: flex-start; /* Align to left */
+    border-bottom-left-radius: var(--border-radius-small); /* Sharper corner at bottom-left */
+    border-top-left-radius: var(--border-radius-medium);
+    border-bottom-right-radius: var(--border-radius-medium);
+    border-top-right-radius: var(--border-radius-medium);
+}
+
+.message-sender {
+    font-weight: bold;
+    font-size: 0.8em; /* Slightly smaller sender name */
+    margin-bottom: 3px; /* Less space below sender name */
+    opacity: 0.8;
+}
+
+.message-sent .message-sender {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.message-received .message-sender {
+    color: var(--color-primary-dark);
+}
+
+.message-content {
+    margin: 0;
+    font-size: 1em;
+}
+
+.message-timestamp {
+    font-size: 0.7em; /* Smaller timestamp */
+    color: var(--color-text-muted);
+    margin-top: 5px;
+    display: block;
+    text-align: right;
+}
+
+.message-sent .message-timestamp {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* --- Message Input Area Styling --- */
+.message-input-area {
+    display: flex;
+    flex-direction: column;
+    padding-top: 15px;
+    border-top: 1px solid var(--color-border);
+}
+
+.message-input-area .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-medium);
+    font-size: 1em;
+    resize: vertical; /* Allow vertical resizing */
+    min-height: 60px; /* Minimum height for textarea */
+    max-height: 150px; /* Prevent it from getting too tall */
+}
+
+.message-input-area .btn {
+    align-self: flex-end; /* Align button to the right */
+    margin-top: 12px; /* More space above button */
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: var(--border-radius-medium);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: var(--shadow-small); /* Add a subtle shadow to the button */
+}
+
+/* --- Responsive Adjustments (for larger screens) --- */
+@media (min-width: 768px) {
+    .messages-layout {
+        flex-direction: row; /* Side-by-side layout for tablets and desktops */
+    }
+
+    .conversation-list-panel {
+        flex: 1; /* Conversation list takes 1 part of space */
+        max-width: 300px; /* Limit its maximum width */
+        max-height: none; /* Remove height limit on larger screens */
+    }
+
+    .message-display-panel {
+        flex: 3; /* Message display takes 3 parts of space */
+    }
+}
+
+/* Further adjustments for very large screens if needed */
+@media (min-width: 1200px) {
+    .messages-container {
+        padding: 30px;
+    }
+}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointments - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/appointments/appointments.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="appointments-container">
+    <h1 class="appointments-title">Appointments</h1>
+    <p class="appointments-subtitle">Manage and view your scheduled sessions.</p>
+
+    {% if current_user.role == 'therapist' %}
+    <div class="card schedule-appointment-card">
+        <h3 class="card-title">Schedule New Appointment</h3>
+        <form method="POST" action="{{ url_for('appointments') }}">
+            <div class="form-group">
+                <label for="client_id" class="form-label">Select Client</label>
+                <select id="client_id" name="client_id" class="form-control" required>
+                    <option value="">-- Select a Client --</option>
+                    {% for client in clients %}
+                        <option value="{{ client.id }}">{{ client.name }} ({{ client.username }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="start_time" class="form-label">Start Time</label>
+                <input type="datetime-local" id="start_time" name="start_time" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="end_time" class="form-label">End Time</label>
+                <input type="datetime-local" id="end_time" name="end_time" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="notes" class="form-label">Notes (Optional)</label>
+                <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Add any relevant notes for the appointment..."></textarea>
+            </div>
+            <div class="form-group text-center">
+                <button type="submit" class="btn btn-primary btn-block">Schedule Appointment</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="card appointment-list-card mt-4">
+        <h3 class="card-title">
+            {% if current_user.role == 'therapist' %}
+                All Scheduled Appointments
+            {% else %}
+                My Appointments
+            {% endif %}
+        </h3>
+        {% if appointments %}
+            <ul class="appointment-list">
+                {% for appt in appointments %}
+                    <li class="appointment-item">
+                        <div class="appointment-details">
+                            <p><strong>Client:</strong> {{ appt.client.name }} ({{ appt.client.username }})</p>
+                            <p><strong>Therapist:</strong> {{ appt.therapist.name }} ({{ appt.therapist.username }})</p>
+                            <p><strong>Time:</strong> {{ appt.start_time.strftime('%Y-%m-%d %H:%M') }} - {{ appt.end_time.strftime('%H:%M') }}</p>
+                            <p><strong>Status:</strong> <span class="status-{{ appt.status }}">{{ appt.status.capitalize() }}</span></p>
+                            {% if appt.notes %}<p><strong>Notes:</strong> {{ appt.notes }}</p>{% endif %}
+                        </div>
+                        <div class="appointment-actions">
+                            <a href="#" class="btn btn-secondary btn-sm">View Details</a>
+                            {% if current_user.role == 'therapist' %}
+                                <a href="#" class="btn btn-danger btn-sm">Cancel</a>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-center text-muted">No appointments found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

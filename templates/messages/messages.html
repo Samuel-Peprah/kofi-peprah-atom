@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages - GerioCare App{% endblock %}
+
+{% block head_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/messages/messages.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <h1 class="messages-title">Messages</h1>
+    <p class="messages-subtitle">Communicate securely with your care team or patients.</p>
+
+    <div class="messages-layout">
+        <!-- Conversation List / User Selection -->
+        <div class="conversation-list-panel card">
+            <h3 class="panel-title">Conversations</h3>
+            <ul class="conversation-list">
+                {% if users_to_message %}
+                    {% for user in users_to_message %}
+                        <li class="conversation-item {% if loop.first %}active{% endif %} {% if conversations[user.id] and conversations[user.id].unread_count > 0 %}unread{% endif %}"
+                            data-user-id="{{ user.id }}"
+                            data-unread-count="{{ conversations[user.id].unread_count if conversations[user.id] else 0 }}">
+                            <div class="user-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="user-info">
+                                <span class="user-name">{{ user.name }}</span>
+                                <span class="user-role">({{ user.role | capitalize }})</span>
+                                {% if user.is_online %}
+                                    <span class="status-indicator online"></span>
+                                {% else %}
+                                    <span class="status-indicator offline"></span>
+                                {% endif %}
+                                {% if conversations[user.id] and conversations[user.id].unread_count > 0 %}
+                                    <span class="unread-badge">{{ conversations[user.id].unread_count }}</span>
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center p-2">No contacts to message.</p>
+                {% endif %}
+            </ul>
+        </div>
+
+        <!-- Message Display Area -->
+        <div class="message-display-panel card">
+            <div class="message-header">
+                <h3 class="panel-title" id="currentChatPartnerName">Select a conversation</h3>
+            </div>
+            <div class="message-area" id="messageArea">
+                <!-- Messages will be loaded here dynamically by JS -->
+                <p class="text-muted text-center p-4" id="noConversationSelected">Select a conversation from the left to start chatting.</p>
+            </div>
+            <div class="message-input-area">
+                <form id="messageForm" method="POST" action="{{ url_for('messages') }}">
+                    <input type="hidden" id="receiverId" name="receiver_id">
+                    <textarea id="messageContent" name="content" class="form-control" rows="3" placeholder="Type your message..." required></textarea>
+                    <button type="submit" class="btn btn-primary mt-2">Send Message <i class="fas fa-paper-plane ml-1"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const conversationList = document.querySelector('.conversation-list');
+        const messageArea = document.getElementById('messageArea');
+        const currentChatPartnerName = document.getElementById('currentChatPartnerName');
+        const noConversationSelected = document.getElementById('noConversationSelected');
+        const receiverIdInput = document.getElementById('receiverId');
+        const messageContentInput = document.getElementById('messageContent');
+        const messageForm = document.getElementById('messageForm');
+        const sendButton = messageForm.querySelector('button[type="submit"]');
+
+        const conversationsData = JSON.parse(`{{ conversations | tojson | safe }}`);
+        const currentUserId = {{ current_user.id }};
+
+        function displayMessages(partnerId) {
+            console.log(`Attempting to display messages for partnerId: ${partnerId}`);
+            messageArea.innerHTML = ''; // Clear previous messages
+            noConversationSelected.style.display = 'none';
+
+            const conversation = conversationsData[partnerId];
+            if (conversation && conversation.partner) {
+                currentChatPartnerName.textContent = `Chat with ${conversation.partner.name}`;
+                receiverIdInput.value = partnerId;
+                console.log(`receiverIdInput set to: ${receiverIdInput.value}`);
+
+                messageContentInput.focus();
+                console.log(`Input and send button should be enabled for partner: ${conversation.partner.name}`);
+
+                conversation.messages.forEach(msg => {
+                    const messageClass = msg.sender_id === currentUserId ? 'message-sent' : 'message-received';
+                    const senderName = msg.sender_id === currentUserId ? 'You' : conversation.partner.name;
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message-bubble', messageClass);
+                    messageElement.innerHTML = `
+                        <p class="message-sender">${senderName}</p>
+                        <p class="message-content">${msg.content}</p>
+                        <span class="message-timestamp">${msg.timestamp}</span>
+                    `;
+                    messageArea.appendChild(messageElement);
+                });
+                messageArea.scrollTop = messageArea.scrollHeight;
+
+                const activeConversationItem = document.querySelector(`.conversation-item[data-user-id="${partnerId}"]`);
+                if (activeConversationItem) {
+                    activeConversationItem.classList.remove('unread');
+                    const unreadBadge = activeConversationItem.querySelector('.unread-badge');
+                    if (unreadBadge) {
+                        unreadBadge.remove();
+                    }
+                }
+
+            } else {
+                currentChatPartnerName.textContent = 'Select a conversation';
+                noConversationSelected.style.display = 'block';
+                receiverIdInput.value = '';
+                console.log('No conversation or partner data found, receiverIdInput cleared.');
+            }
+        }
+
+        conversationList.addEventListener('click', function(event) {
+            const item = event.target.closest('.conversation-item');
+            if (item) {
+                document.querySelectorAll('.conversation-item').forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
+                const partnerId = item.dataset.userId;
+                displayMessages(partnerId);
+            }
+        });
+
+        // MODIFIED: Use fetch API for form submission
+        messageForm.addEventListener('submit', function(event) {
+            // event.preventDefault(); // Prevent default form submission
+
+            const receiverId = receiverIdInput.value;
+            const messageContent = messageContentInput.value;
+
+            console.log('Attempting to send message via fetch:');
+            console.log('Receiver ID:', receiverId);
+            console.log('Message Content:', messageContent);
+
+            if (!receiverId || !messageContent.trim()) {
+                alert('Recipient and message content are required.'); // Use a simple alert for now
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('receiver_id', receiverId);
+            formData.append('content', messageContent.trim());
+
+            fetch(this.action, { // Use the form's action URL
+                method: 'POST',
+                body: formData // Send as FormData
+            })
+            .then(response => {
+                // Flask's redirect will be followed automatically by the browser
+                // We just need to handle the response if it's not a redirect
+                if (response.ok) {
+                    // Message sent successfully, clear input and potentially update UI
+                    messageContentInput.value = '';
+                    // No need to manually call displayMessages here, as SocketIO will handle it
+                    // Or, if SocketIO is not reliable, you could re-fetch messages:
+                    // window.location.reload(); // Simple full page reload
+                } else {
+                    // Handle errors from Flask (e.g., if Flask returns JSON with errors)
+                    return response.text().then(text => { // Get response as text to debug
+                        console.error('Flask response error:', text);
+                        alert('Error sending message. Check console for details.');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Network error during message send:', error);
+                alert('Network error. Could not send message.');
+            });
+        });
+
+        var socket = io();
+
+        socket.on('connect', function() {
+            console.log('Connected to Socket.IO server!');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('Disconnected from Socket.IO server.');
+        });
+
+        socket.on('new_message', function(data) {
+            console.log('New message received via Socket.IO:', data);
+            const activePartnerId = receiverIdInput.value;
+            if (data.sender_id == activePartnerId || data.receiver_id == activePartnerId) {
+                let conversation = conversationsData[activePartnerId];
+                if (!conversation) {
+                    conversation = {
+                        partner: { name: data.sender_name, id: data.sender_id, role: 'unknown', is_online: false },
+                        messages: [],
+                        unread_count: 0
+                    };
+                    conversationsData[activePartnerId] = conversation;
+                }
+
+                const messageExists = conversation.messages.some(msg =>
+                    msg.sender_id === data.sender_id &&
+                    msg.content === data.content &&
+                    msg.timestamp === data.timestamp
+                );
+
+                if (!messageExists) {
+                    conversation.messages.push({
+                        sender_id: data.sender_id,
+                        receiver_id: data.receiver_id,
+                        content: data.content,
+                        timestamp: data.timestamp,
+                        is_read: false
+                    });
+                    displayMessages(activePartnerId);
+                }
+            } else {
+                const conversationItem = document.querySelector(`.conversation-item[data-user-id="${data.sender_id}"]`);
+                if (conversationItem) {
+                    let currentUnreadCount = parseInt(conversationItem.dataset.unreadCount || 0);
+                    currentUnreadCount++;
+                    conversationItem.dataset.unreadCount = currentUnreadCount;
+                    conversationItem.classList.add('unread');
+                    let unreadBadge = conversationItem.querySelector('.unread-badge');
+                    if (!unreadBadge) {
+                        unreadBadge = document.createElement('span');
+                        unreadBadge.classList.add('unread-badge');
+                        conversationItem.querySelector('.user-info').appendChild(unreadBadge);
+                    }
+                    unreadBadge.textContent = currentUnreadCount;
+                } else {
+                    alert(`New message from ${data.sender_name}: ${data.content}`);
+                }
+            }
+        });
+
+        if (conversationList.firstElementChild) {
+            const firstPartnerId = conversationList.firstElementChild.dataset.userId;
+            conversationList.firstElementChild.click(); 
+        } else {
+            noConversationSelected.style.display = 'block';
+            receiverIdInput.value = '';
+        }
+
+        messageArea.scrollTop = messageArea.scrollHeight;
+    });
+</script>
+{% endblock %}

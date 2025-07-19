@@ -1,0 +1,35 @@
+/* static/css/forms/home_health_form.css */
+
+/*
+   For now, home_health_form.css will largely inherit from outpatient_form.css
+   as the overall layout and styling for assessment forms are similar.
+   You can add specific overrides here if the home health form needs
+   distinct visual elements in the future.
+*/
+
+/* Example of an override if needed: */
+/* .form-page-title.home-health {
+    color: var(--color-secondary);
+} */
+
+/* Radio button group specific styling */
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem; /* Spacing between radio options */
+    margin-top: 0.5rem;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    font-weight: 400;
+    color: var(--color-text-dark);
+    cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+    margin-right: 0.5rem;
+    transform: scale(1.1);
+    cursor: pointer;
+}
