@@ -69,34 +69,35 @@
 document.addEventListener('DOMContentLoaded', function() {
     const subscribeButtons = document.querySelectorAll('.plan-subscribe-btn');
 
-    // Get current user's authentication status and role from Jinja context
     const isAuthenticated = {{ current_user.is_authenticated | tojson }};
-    const currentUserRole = "{{ current_user.role if current_user.is_authenticated else '' }}"; // Get role as string
+    const currentUserRole = "{{ current_user.role if current_user.is_authenticated else '' }}";
 
     subscribeButtons.forEach(btn => {
-        btn.onclick = () => {
-            // Client-side check for authentication
-            if (!isAuthenticated) {
+        btn.onclick = (event) => {
+            // This check is still needed as the button can be disabled for unauthenticated users
+            if (btn.disabled && !isAuthenticated) {
+                event.preventDefault(); 
                 alert("Please log in to subscribe to a plan.");
                 window.location.href = "{{ url_for('login') }}";
-                return;
-            }
-            
-            // Client-side check for client role
-            if (currentUserRole !== 'client') {
-                alert("Only clients can subscribe to plans.");
                 return;
             }
 
             const planId = btn.dataset.plan;
             const amount = btn.dataset.amount;
             const planName = btn.dataset.name;
-            const userEmail = "{{ current_user.email if current_user.is_authenticated else '' }}"; // Ensure email is available
+            // The planRole data attribute is still present on the button, but not used in JS logic here
+            // const planRole = btn.dataset.role; 
+            const userEmail = "{{ current_user.email if current_user.is_authenticated else '' }}";
+
+            // Removed client-side checks for currentUserRole vs planRole,
+            // and for ['client', 'therapist'] inclusion, as per your instruction.
+            // The backend /paystack/verify route still performs the `plan.for_role != current_user.role` check.
+
 
             const handler = PaystackPop.setup({
-                key: "{{ pub_key }}", // Public key from Flask context
-                email: userEmail, // User's email from Flask-Login
-                amount: amount, // Amount in pesewas
+                key: "{{ pub_key }}",
+                email: userEmail,
+                amount: amount,
                 currency: "GHS",
                 channels: ['mobile_money', 'card'],
                 metadata: {
@@ -106,11 +107,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     ]
                 },
                 callback: function(response) {
-                    // Payment successful, now verify with backend
                     fetch("{{ url_for('verify_payment') }}", {
                         method: "POST",
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({ ref: response.reference, plan_id: planId })
                     })
@@ -118,11 +118,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(data => {
                         if (data.success) {
                             alert("Payment successful! Your subscription is now active.");
-                            window.location.href = "{{ url_for('client_dashboard') }}"; // Redirect to dashboard
+                            // Redirection logic based on current user's role
+                            if (currentUserRole === 'client') {
+                                window.location.href = "{{ url_for('client_dashboard') }}";
+                            } else if (currentUserRole === 'therapist') {
+                                window.location.href = "{{ url_for('therapist_dashboard') }}";
+                            } else {
+                                // Fallback for admin or other roles (they shouldn't be subscribing, but good to have)
+                                window.location.reload(); 
+                            }
                         } else {
                             alert("Payment verification failed: " + (data.error || "Unknown error."));
                             console.error("Verification error:", data.error);
-                            window.location.reload(); // Reload to show flash message
+                            window.location.reload();
                         }
                     })
                     .catch(error => {

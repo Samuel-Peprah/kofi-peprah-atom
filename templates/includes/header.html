@@ -32,7 +32,7 @@
                     <a href="{{ url_for('profile_edit') }}" class="nav-link">Profile</a>
                 
                     {# NEW: Subscription Links for authenticated users #}
-                    {% if current_user.role == 'client' %}
+                    {% if current_user.role in ['client', 'therapist'] %}
                         <a href="{{ url_for('my_subscription') }}" class="nav-link">My Subscription</a>
                     {% endif %}
                     <a href="{{ url_for('pricing') }}" class="nav-link">Pricing</a>

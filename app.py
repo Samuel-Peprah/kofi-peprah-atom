@@ -19,6 +19,9 @@ from functools import wraps
 import requests
 import hmac
 import hashlib
+import logging
+from flask_migrate import Migrate
+logging.basicConfig(level=logging.INFO)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -42,7 +45,8 @@ db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 mail = Mail(app)
-socketio = SocketIO(app, manage_session=False)
+socketio = SocketIO(app, manage_session=False, cors_allowed_origins="*")
+migrate = Migrate(app, db)
 
 PAYSTACK_HEADERS = {"Authorization": f"Bearer {app.config['PAYSTACK_SECRET_KEY']}"}
 
@@ -151,7 +155,7 @@ def has_active_subscription(user):
     Checks if a given user (client) has an active and unexpired subscription.
     Admins, Therapists, and Caregivers do not require subscriptions.
     """
-    if not user.is_authenticated or user.role != 'client':
+    if not user.is_authenticated or user.role not in ['client', 'therapist']:
         return True # Non-clients or unauthenticated users don't need a subscription to proceed
     
     # Get the latest active subscription for the client
@@ -205,7 +209,7 @@ def subscription_required(f):
             return redirect(url_for("login"))
         
         # Allow admins/therapists/caregivers to bypass subscription checks
-        if current_user.role in ['admin', 'therapist', 'caregiver']: # MODIFIED: Added caregiver
+        if current_user.role in ['admin', 'caregiver']: # MODIFIED: Added caregiver
             return f(*args, **kwargs)
 
         # Check for active subscription for clients
@@ -404,6 +408,7 @@ def admin_dashboard():
 @app.route('/therapist_dashboard')
 @login_required
 @role_required('therapist', 'admin')
+@subscription_required
 def therapist_dashboard():
     my_clients = User.query.filter_by(role='client').all() 
 
@@ -584,133 +589,289 @@ def appointments():
         my_appointments = Appointment.query.filter_by(client_id=current_user.id).order_by(Appointment.start_time.asc()).all()
         return render_template('appointments/appointments.html', appointments=my_appointments)
 
-# --- Messaging Routes ---
-@app.route('/messages', methods=['GET', 'POST'])
+# # --- Messaging Routes ---
+# @app.route('/messages', methods=['GET', 'POST'])
+# @login_required
+# @subscription_required # Ensure this decorator is correctly defined/imported
+# def messages():
+#     current_user_id = current_user.id
+
+#     if request.method == 'POST':
+#         receiver_id = request.form.get('receiver_id')
+#         content = request.form.get('content')
+
+#         # Basic validation
+#         if not receiver_id or not content:
+#             return jsonify({'success': False, 'message': 'Recipient and message content are required.'}), 400
+
+#         try:
+#             receiver_id = int(receiver_id)
+#         except ValueError:
+#             return jsonify({'success': False, 'message': 'Invalid receiver ID.'}), 400
+
+#         receiver = db.session.get(User, receiver_id)
+#         if not receiver:
+#             return jsonify({'success': False, 'message': 'Recipient not found.'}), 404
+
+#         # Create and save the new message
+#         new_message = UserMessage(sender_id=current_user_id, receiver_id=receiver_id, content=content)
+#         db.session.add(new_message)
+#         db.session.commit()
+
+#         # Emit message via Socket.IO for real-time update
+#         message_data = new_message.to_dict() # Use the to_dict method from UserMessage model
+#         message_data['sender_name'] = current_user.name # Add sender's name for client-side display
+
+#         print(f"Emitting new_message: {message_data}")
+        
+#         # Emit to the receiver's room
+#         socketio.emit('new_message', message_data, room=f'user_{receiver_id}')
+#         # Emit to the sender's room as well, so their own chat updates immediately
+#         if current_user_id != receiver_id:
+#             socketio.emit('new_message', message_data, room=f'user_{current_user_id}')
+
+#         return jsonify({'success': True, 'message': 'Message sent!', 'message_data': message_data}), 200
+
+#     # GET request logic
+#     users_to_message_query = []
+#     if current_user.role == 'therapist':
+#         # Therapists can message clients and caregivers
+#         clients = User.query.filter_by(role='client').all()
+#         caregivers = User.query.filter_by(role='caregiver').all()
+#         users_to_message_query.extend(clients)
+#         users_to_message_query.extend(caregivers)
+#     elif current_user.role == 'client':
+#         # Clients can message therapists and their assigned caregivers
+#         therapists = User.query.filter_by(role='therapist').all()
+#         caregivers = current_user.caregivers_of_client.all()
+#         users_to_message_query.extend(therapists)
+#         users_to_message_query.extend(caregivers)
+#     elif current_user.role == 'caregiver':
+#         # Caregivers can message their managed clients and therapists
+#         managed_clients = current_user.clients_managed.all()
+#         therapists = User.query.filter_by(role='therapist').all()
+#         users_to_message_query.extend(therapists)
+#         users_to_message_query.extend(managed_clients)
+#     else: # Admin can message anyone except themselves
+#         users_to_message_query = User.query.filter(User.id != current_user_id).all()
+
+#     # Ensure unique users and sort them by name
+#     unique_users_map = {u.id: u for u in users_to_message_query}
+#     users_to_message_sorted = sorted(unique_users_map.values(), key=lambda u: u.name if u.name else u.username)
+
+#     # Fetch all messages involving the current user
+#     all_messages = UserMessage.query.filter(
+#         (UserMessage.sender_id == current_user_id) | (UserMessage.receiver_id == current_user_id)
+#     ).order_by(UserMessage.timestamp.asc()).all()
+
+#     conversations = {}
+#     # Initialize conversations for all potential partners
+#     for user_obj in users_to_message_sorted:
+#         conversations[user_obj.id] = {
+#             'partner': {
+#                 'id': user_obj.id,
+#                 'name': user_obj.name,
+#                 'username': user_obj.username,
+#                 'role': user_obj.role,
+#                 'is_online': user_obj.is_online,
+#                 'last_online': user_obj.last_online.strftime('%Y-%m-%d %H:%M:%S') if user_obj.last_online else None
+#             },
+#             'messages': [],
+#             'unread_count': 0
+#         }
+
+#     # Populate messages and mark as read
+#     for msg in all_messages:
+#         partner_id = msg.receiver_id if msg.sender_id == current_user_id else msg.sender_id
+        
+#         # Ensure partner exists in conversations, if not, it means they are not in users_to_message_sorted
+#         # This could happen if a user messages someone outside their "allowed" contacts.
+#         if partner_id not in conversations:
+#             partner_user = db.session.get(User, partner_id)
+#             if partner_user:
+#                 conversations[partner_id] = {
+#                     'partner': {
+#                         'id': partner_user.id,
+#                         'name': partner_user.name,
+#                         'username': partner_user.username,
+#                         'role': partner_user.role,
+#                         'is_online': partner_user.is_online,
+#                         'last_online': partner_user.last_online.strftime('%Y-%m-%d %H:%M:%S') if partner_user.last_online else None
+#                     },
+#                     'messages': [],
+#                     'unread_count': 0
+#                 }
+#             else:
+#                 conversations[partner_id] = {
+#                     'partner': {'id': partner_id, 'name': 'Unknown User', 'username': 'unknown', 'role': 'unknown', 'is_online': False, 'last_online': None},
+#                     'messages': [],
+#                     'unread_count': 0
+#                 }
+
+#         # Mark message as read if current user is the receiver and it's unread
+#         if msg.receiver_id == current_user_id and not msg.is_read:
+#             msg.is_read = True
+#             db.session.add(msg) # Mark for commit
+#             conversations[partner_id]['unread_count'] += 1 # Increment unread count for display
+
+#         conversations[partner_id]['messages'].append(msg.to_dict()) # Use UserMessage.to_dict()
+
+#     db.session.commit() # Commit all read status changes
+
+#     # Convert conversations dict to a list of values for easier iteration in Jinja
+#     conversations_list = list(conversations.values())
+#     # Sort conversations by partner name for consistent display
+#     conversations_list.sort(key=lambda conv: conv['partner']['name'] if conv['partner']['name'] else conv['partner']['username'])
+
+#     print(f"Prepared {len(conversations_list)} conversations for rendering.")
+#     return render_template('messages/messages.html', users_to_message=users_to_message_sorted, conversations=conversations_list)
+# @app.route('/messages/<int:partner_id>')
+# @login_required
+# @subscription_required
+# def chat_with(partner_id):
+#     """
+#     Displays the chat with a specific partner.
+#     This route is used to load the chat history with a specific user.
+#     """
+#     current_user_id = current_user.id
+
+#     # Fetch the partner user
+#     partner = User.query.get(partner_id)
+#     if not partner:
+#         flash('User not found.', 'danger')
+#         return redirect(url_for('messages'))
+
+#     # Fetch all messages between the current user and the partner
+#     messages = UserMessage.query.filter(
+#         (UserMessage.sender_id == current_user_id) & (UserMessage.receiver_id == partner_id) |
+#         (UserMessage.sender_id == partner_id) & (UserMessage.receiver_id == current_user_id)
+#     ).order_by(UserMessage.timestamp.asc()).all()
+
+#     # Mark all messages as read for this conversation
+#     for msg in messages:
+#         if msg.receiver_id == current_user_id and not msg.is_read:
+#             msg.is_read = True
+#             db.session.add(msg)
+
+#     db.session.commit()
+
+
+# The main chat page route, now a simple renderer
+@app.route('/messages')
 @login_required
 @subscription_required
 def messages():
-    if request.method == 'POST':
-        receiver_id = request.form.get('receiver_id')
-        content = request.form.get('content')
+    """Renders the main chat page."""
+    return render_template('messages/messages.html')
 
-        if not receiver_id or not content:
-            flash('Recipient and message content are required.', 'danger')
-            return redirect(url_for('messages'))
 
-        receiver = User.query.get(receiver_id)
-        if not receiver:
-            flash('Recipient not found.', 'danger')
-            return redirect(url_for('messages'))
+# API route to get all users the current user can message
+@app.route('/api/messages/users', methods=['GET'])
+@login_required
+def get_message_users():
+    current_user_id = current_user.id
+    users_to_message_query = []
 
-        new_message = UserMessage(sender_id=current_user.id, receiver_id=receiver_id, content=content)
-        db.session.add(new_message)
-        db.session.commit()
-        flash('Message sent!', 'success')
-
-        socketio.emit('new_message', {
-            'sender_id': current_user.id,
-            'sender_name': current_user.name,
-            'content': content,
-            'timestamp': new_message.timestamp.strftime('%Y-%m-%d %H:%M')
-        }, room=f'user_{receiver_id}')
-
-        return redirect(url_for('messages'))
-
-    # GET request logic
-    users_to_message = []
+    # Logic to determine who the current user can message based on their role
     if current_user.role == 'therapist':
         clients = User.query.filter_by(role='client').all()
         caregivers = User.query.filter_by(role='caregiver').all()
-        users_to_message.extend(clients)
-        users_to_message.extend(caregivers)
+        users_to_message_query.extend(clients)
+        users_to_message_query.extend(caregivers)
     elif current_user.role == 'client':
         therapists = User.query.filter_by(role='therapist').all()
         caregivers = current_user.caregivers_of_client.all()
-        users_to_message.extend(therapists)
-        users_to_message.extend(caregivers)
+        users_to_message_query.extend(therapists)
+        users_to_message_query.extend(caregivers)
     elif current_user.role == 'caregiver':
         managed_clients = current_user.clients_managed.all()
         therapists = User.query.filter_by(role='therapist').all()
-        users_to_message.extend(managed_clients)
-        users_to_message.extend(therapists)
-    else: # Admin can message anyone
-        users_to_message = User.query.filter(User.id != current_user.id).all()
+        users_to_message_query.extend(therapists)
+        users_to_message_query.extend(managed_clients)
+    else:  # Admin
+        users_to_message_query = User.query.filter(User.id != current_user_id).all()
 
-    # Ensure partner objects are fully loaded or converted for JSON serialization
-    cleaned_users_to_message = []
-    for u in users_to_message:
-        cleaned_users_to_message.append({
-            'id': u.id,
-            'name': u.name,
-            'username': u.username,
-            'role': u.role,
-            'is_online': u.is_online
-        })
-    users_to_message = sorted(list({u['id']: u for u in cleaned_users_to_message}.values()), key=lambda u: u['name'])
+    # Ensure unique users and sort them
+    unique_users_map = {u.id: u for u in users_to_message_query}
+    users_to_message_sorted = sorted(unique_users_map.values(), key=lambda u: u.name or u.username)
+
+    # Format the users into a list of dictionaries for JSON serialization
+    users_data = [{
+        'id': user.id,
+        'name': user.name or user.username,
+        'role': user.role,
+        'is_online': user.is_online,
+        'last_online': user.last_online.strftime('%Y-%m-%d %H:%M:%S') if user.last_online else None
+    } for user in users_to_message_sorted]
+
+    return jsonify(users_data)
 
 
-    all_messages = UserMessage.query.filter(
-        (UserMessage.sender_id == current_user.id) | (UserMessage.receiver_id == current_user.id)
+# API route to get the message history with a specific partner
+@app.route('/api/messages/history/<int:partner_id>', methods=['GET'])
+@login_required
+def get_chat_history(partner_id):
+    current_user_id = current_user.id
+
+    # Fetch all messages between the current user and the partner
+    messages = UserMessage.query.filter(
+        db.or_(
+            db.and_(UserMessage.sender_id == current_user_id, UserMessage.receiver_id == partner_id),
+            db.and_(UserMessage.sender_id == partner_id, UserMessage.receiver_id == current_user_id)
+        )
     ).order_by(UserMessage.timestamp.asc()).all()
 
-    conversations = {}
-    # First, populate conversations with all potential partners, even if no messages yet
-    for user_data in users_to_message:
-        conversations[user_data['id']] = {
-            'partner': user_data,
-            'messages': [],
-            'unread_count': 0
-        }
-
-    # Then, add actual messages to their respective conversations
-    for msg in all_messages:
-        partner_id = msg.receiver_id if msg.sender_id == current_user.id else msg.sender_id
-        
-        # Ensure the partner exists in the conversations dict, if not, create a minimal entry
-        if partner_id not in conversations:
-            partner_user = User.query.get(partner_id)
-            if partner_user:
-                conversations[partner_id] = {
-                    'partner': {
-                        'id': partner_user.id,
-                        'name': partner_user.name,
-                        'username': partner_user.username,
-                        'role': partner_user.role,
-                        'is_online': partner_user.is_online
-                    },
-                    'messages': [],
-                    'unread_count': 0
-                }
-            else:
-                # Fallback for truly unknown users (should be rare with FKs)
-                conversations[partner_id] = {
-                    'partner': {'id': partner_id, 'name': 'Unknown User', 'username': 'unknown', 'role': 'unknown', 'is_online': False},
-                    'messages': [],
-                    'unread_count': 0
-                }
-
-        if msg.receiver_id == current_user.id and not msg.is_read:
+    # Mark all incoming messages as read
+    for msg in messages:
+        if msg.receiver_id == current_user_id and not msg.is_read:
             msg.is_read = True
             db.session.add(msg)
-            conversations[partner_id]['unread_count'] += 1
-
-        conversations[partner_id]['messages'].append({
-            'sender_id': msg.sender_id,
-            'receiver_id': msg.receiver_id,
-            'content': msg.content,
-            'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M'),
-            'is_read': msg.is_read
-        })
+    
     db.session.commit()
 
-    print("Conversations data being passed to template:")
-    for p_id, conv_data in conversations.items():
-        print(f"  Partner ID: {p_id}, Partner Name: {conv_data['partner']['name']}, Messages Count: {len(conv_data['messages'])}")
-        if len(conv_data['messages']) > 0:
-            print(f"    First message content: {conv_data['messages'][0]['content']}")
+    # Format messages for JSON response
+    messages_data = [msg.to_dict() for msg in messages]
+
+    return jsonify(messages_data)
 
 
-    return render_template('messages/messages.html', users_to_message=users_to_message, conversations=conversations)
+# API route to send a new message
+@app.route('/api/messages/send', methods=['POST'])
+@login_required
+def send_message():
+    data = request.get_json()
+    receiver_id = data.get('receiver_id')
+    content = data.get('content')
+    current_user_id = current_user.id
+
+    if not receiver_id or not content:
+        return jsonify({'success': False, 'message': 'Recipient and message content are required.'}), 400
+
+    try:
+        receiver_id = int(receiver_id)
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid receiver ID.'}), 400
+
+    receiver = db.session.get(User, receiver_id)
+    if not receiver:
+        return jsonify({'success': False, 'message': 'Recipient not found.'}), 404
+
+    new_message = UserMessage(sender_id=current_user_id, receiver_id=receiver_id, content=content)
+    db.session.add(new_message)
+    db.session.commit()
+
+    # Prepare message data for Socket.IO emission
+    message_data = new_message.to_dict()
+    message_data['sender_name'] = current_user.name
+    message_data['sender_id'] = current_user.id
+
+    # Emit message to both sender's and receiver's rooms
+    socketio.emit('new_message', message_data, room=f'user_{receiver_id}')
+    if current_user_id != receiver_id:
+        socketio.emit('new_message', message_data, room=f'user_{current_user_id}')
+
+    return jsonify({'success': True, 'message': 'Message sent!', 'message_data': message_data}), 200
+
 
 
 # --- Forms Routes ---
@@ -1243,7 +1404,6 @@ def _handle_charge_success(ref):
 
 @app.route("/paystack/verify", methods=["POST"])
 @login_required
-@role_required('client') # Only clients can verify payments for their subscriptions
 def verify_payment():
     """
     Endpoint for frontend to verify a Paystack transaction after user completes payment.
@@ -1314,7 +1474,6 @@ def verify_payment():
 
 @app.route('/my_subscription')
 @login_required # Only logged-in users can see their subscription details
-@role_required('client', 'admin') # Only clients and admins can view this page
 def my_subscription():
     # current_utc_year = datetime.now(timezone.utc).year # 'now' is already in context processor
     
@@ -1322,7 +1481,7 @@ def my_subscription():
     # For simplicity, this route is client-focused. Admins can access it but it will show their (non-existent) subscription.
     # A more robust solution would have a separate admin view for subscriptions.
     
-    if current_user.role == 'client':
+    if current_user.role in ['client', 'therapist']:
         # Fetch the most recent subscription for the current client user
         latest_subscription = Subscription.query.filter_by(user_id=current_user.id)\
                                                 .order_by(Subscription.timestamp.desc())\
@@ -1333,9 +1492,7 @@ def my_subscription():
     else:
         # For therapist/caregiver, redirect them to their dashboard
         flash("You are not authorized to view this page.", 'danger')
-        if current_user.role == 'therapist':
-            return redirect(url_for('therapist_dashboard'))
-        elif current_user.role == 'admin':
+        if current_user.role == 'admin':
             return redirect(url_for('admin_dashboard'))
         elif current_user.role == 'caregiver':
             return redirect(url_for('caregiver_dashboard'))
@@ -1343,38 +1500,151 @@ def my_subscription():
             return redirect(url_for('index')) # Fallback for other roles
 
 
-# --- SocketIO Events ---
+# # --- SocketIO Events ---
+# @socketio.on('connect')
+# def handle_connect():
+#     if current_user.is_authenticated:
+#         current_user.is_online = True
+#         current_user.last_online = datetime.utcnow()
+#         db.session.commit()
+#         join_room(f'user_{current_user.id}')
+#         if current_user.role in ['admin', 'therapist']:
+#             join_room('admin_therapist_room')
+#             if current_user.role == 'client': # Only notify if a client comes online
+#                 alert_message = f"Patient {current_user.name} is now online."
+#                 new_alert = Alert(user_id=current_user.id, type='patient_online', message=alert_message)
+#                 db.session.add(new_alert)
+#                 db.session.commit()
+#                 socketio.emit('patient_online_alert', {'user_id': current_user.id, 'username': current_user.username, 'message': alert_message}, room='admin_therapist_room')
+#         print(f'User {current_user.username} connected and is online.')
+#     else:
+#         print('Anonymous user connected.')
+
+# @socketio.on('disconnect')
+# def handle_disconnect():
+#     if current_user.is_authenticated:
+#         current_user.is_online = False
+#         current_user.last_online = datetime.utcnow()
+#         db.session.commit()
+#         leave_room(f'user_{current_user.id}')
+#         if current_user.role in ['admin', 'therapist']:
+#             leave_room('admin_therapist_room')
+#         print(f'User {current_user.username} disconnected and is offline.')
+#     else:
+#         print('Anonymous user disconnected.')
+
+# # --- Socket.IO Event Handlers ---
+# @socketio.on('connect')
+# def handle_connect():
+#     if current_user.is_authenticated:
+#         user_id = current_user.id
+#         join_room(f'user_{user_id}') # Join individual user room
+        
+#         # Update online status
+#         current_user.is_online = True
+#         current_user.last_online = datetime.utcnow()
+#         db.session.commit()
+        
+#         print(f'User {current_user.username} (ID: {user_id}) connected and is online.')
+
+#         # Join role-based rooms and emit alerts if applicable
+#         if current_user.role in ['admin', 'therapist']:
+#             join_room('admin_therapist_room')
+#             print(f'User {current_user.username} joined admin_therapist_room.')
+        
+#         # Only notify if a client comes online
+#         if current_user.role == 'client':
+#             alert_message = f"Patient {current_user.name} is now online."
+#             new_alert = Alert(user_id=current_user.id, type='patient_online', message=alert_message)
+#             db.session.add(new_alert)
+#             db.session.commit()
+#             # Emit to admin_therapist_room so therapists/admins see the alert
+#             socketio.emit('patient_online_alert', {
+#                 'user_id': current_user.id,
+#                 'username': current_user.username,
+#                 'name': current_user.name, # Include name for display
+#                 'message': alert_message
+#             }, room='admin_therapist_room')
+#             print(f'Emitted patient_online_alert for {current_user.username}.')
+        
+#         # Also, broadcast user status change to all connected users
+#         # This allows other users to update their contact lists for online/offline status
+#         socketio.emit('user_status_change', {
+#             'user_id': user_id,
+#             'is_online': True,
+#             'last_online': current_user.last_online.strftime('%Y-%m-%d %H:%M:%S')
+#         }, broadcast=True)
+
+#     else:
+#         print('Anonymous user connected.')
+
+# @socketio.on('disconnect')
+# def handle_disconnect():
+#     if current_user.is_authenticated:
+#         user_id = current_user.id
+#         leave_room(f'user_{user_id}')
+        
+#         # Update online status
+#         current_user.is_online = False
+#         current_user.last_online = datetime.utcnow()
+#         db.session.commit()
+        
+#         print(f'User {current_user.username} (ID: {user_id}) disconnected and is offline.')
+
+#         # Leave role-based rooms
+#         if current_user.role in ['admin', 'therapist']:
+#             leave_room('admin_therapist_room')
+#             print(f'User {current_user.username} left admin_therapist_room.')
+        
+#         # Broadcast user status change to all connected users
+#         socketio.emit('user_status_change', {
+#             'user_id': user_id,
+#             'is_online': False,
+#             'last_online': current_user.last_online.strftime('%Y-%m-%d %H:%M:%S')
+#         }, broadcast=True)
+#     else:
+#         print('Anonymous user disconnected.')
+
+# Socket.IO event handler for user connection
 @socketio.on('connect')
 def handle_connect():
+    # Only authenticated users should join a room
     if current_user.is_authenticated:
+        # Join a unique room for the current user
+        join_room(f'user_{current_user.id}')
+        print(f"User {current_user.id} connected via WebSocket and joined room 'user_{current_user.id}'")
+
+        # Mark user as online and update last_online timestamp
         current_user.is_online = True
         current_user.last_online = datetime.utcnow()
         db.session.commit()
-        join_room(f'user_{current_user.id}')
-        if current_user.role in ['admin', 'therapist']:
-            join_room('admin_therapist_room')
-            if current_user.role == 'client': # Only notify if a client comes online
-                alert_message = f"Patient {current_user.name} is now online."
-                new_alert = Alert(user_id=current_user.id, type='patient_online', message=alert_message)
-                db.session.add(new_alert)
-                db.session.commit()
-                socketio.emit('patient_online_alert', {'user_id': current_user.id, 'username': current_user.username, 'message': alert_message}, room='admin_therapist_room')
-        print(f'User {current_user.username} connected and is online.')
-    else:
-        print('Anonymous user connected.')
+        
+        # Notify other users that this user is now online
+        socketio.emit('user_status_update', {
+            'user_id': current_user.id,
+            'is_online': True,
+            'last_online': current_user.last_online.strftime('%Y-%m-%d %H:%M:%S')
+        }, broadcast=True, include_self=False)
 
 @socketio.on('disconnect')
 def handle_disconnect():
     if current_user.is_authenticated:
+        # Leave the user's room
+        leave_room(f'user_{current_user.id}')
+        print(f"User {current_user.id} disconnected from WebSocket.")
+
+        # Mark user as offline and update last_online timestamp
         current_user.is_online = False
         current_user.last_online = datetime.utcnow()
         db.session.commit()
-        leave_room(f'user_{current_user.id}')
-        if current_user.role in ['admin', 'therapist']:
-            leave_room('admin_therapist_room')
-        print(f'User {current_user.username} disconnected and is offline.')
-    else:
-        print('Anonymous user disconnected.')
+        
+        # Notify other users that this user is now offline
+        socketio.emit('user_status_update', {
+            'user_id': current_user.id,
+            'is_online': False,
+            'last_online': current_user.last_online.strftime('%Y-%m-%d %H:%M:%S')
+        }, broadcast=True, include_self=False)
+
 
 def send_app_alert(user_id, alert_type, message_content):
     new_alert = Alert(user_id=user_id, type=alert_type, message=message_content)
@@ -1439,49 +1709,49 @@ def internal_server_error(e):
 
 # --- Initial Database Setup and Run ---
 if __name__ == '__main__':
-    with app.app_context():
-        if not os.path.exists(app.instance_path):
-            os.makedirs(app.instance_path)
+    # with app.app_context():
+    #     if not os.path.exists(app.instance_path):
+    #         os.makedirs(app.instance_path)
 
-        db.create_all()
+    #     db.create_all()
         
-        # NEW: Add default plans if none exist
-        if Plan.query.count() == 0:
-            print("Adding default subscription plans...")
-            monthly_plan = Plan(
-                name="Monthly Plan",
-                amount_pesewas=5000, # GHS 50.00
-                interval_days=30,
-                description="Access to core features for one month."
-            )
-            quarterly_plan = Plan(
-                name="Quarterly Plan",
-                amount_pesewas=12000, # GHS 120.00
-                interval_days=90,
-                description="Extended access and additional features for three months."
-            )
-            annual_plan = Plan(
-                name="Annual Plan",
-                amount_pesewas=40000, # GHS 400.00
-                interval_days=365,
-                description="Full access to all premium features for one year with a discount."
-            )
-            db.session.add_all([monthly_plan, quarterly_plan, annual_plan])
-            db.session.commit()
-            print("Default plans added: Monthly, Quarterly, Annual.")
+    #     # NEW: Add default plans if none exist
+    #     if Plan.query.count() == 0:
+    #         print("Adding default subscription plans...")
+    #         monthly_plan = Plan(
+    #             name="Monthly Plan",
+    #             amount_pesewas=5000, # GHS 50.00
+    #             interval_days=30,
+    #             description="Access to core features for one month."
+    #         )
+    #         quarterly_plan = Plan(
+    #             name="Quarterly Plan",
+    #             amount_pesewas=12000, # GHS 120.00
+    #             interval_days=90,
+    #             description="Extended access and additional features for three months."
+    #         )
+    #         annual_plan = Plan(
+    #             name="Annual Plan",
+    #             amount_pesewas=40000, # GHS 400.00
+    #             interval_days=365,
+    #             description="Full access to all premium features for one year with a discount."
+    #         )
+    #         db.session.add_all([monthly_plan, quarterly_plan, annual_plan])
+    #         db.session.commit()
+    #         print("Default plans added: Monthly, Quarterly, Annual.")
 
-        if User.query.count() == 0:
-            admin_user = User(
-                username='admin',
-                email='admin@geriocare.com',
-                name='Admin User',
-                role='admin',
-                is_online=False
-            )
-            admin_user.set_password('admin123')
-            db.session.add(admin_user)
-            db.session.commit()
-            print("Default admin user created: username='admin', password='admin123'")
+    #     if User.query.count() == 0:
+    #         admin_user = User(
+    #             username='admin',
+    #             email='admin@geriocare.com',
+    #             name='Admin User',
+    #             role='admin',
+    #             is_online=False
+    #         )
+    #         admin_user.set_password('admin123')
+    #         db.session.add(admin_user)
+    #         db.session.commit()
+    #         print("Default admin user created: username='admin', password='admin123'")
 
 
 

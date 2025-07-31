@@ -79,6 +79,16 @@ class UserMessage(db.Model):
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     is_read = db.Column(db.Boolean, default=False)
+    
+    def to_dict(self): # Added to_dict for easy JSON serialization
+        return {
+            'id': self.id,
+            'sender_id': self.sender_id,
+            'receiver_id': self.receiver_id,
+            'content': self.content,
+            'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'is_read': self.is_read
+        }
 
     def __repr__(self):
         return f'<UserMessage {self.id} - From: {self.sender_id} To: {self.receiver_id}>'

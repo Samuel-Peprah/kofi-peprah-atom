@@ -1,256 +1,363 @@
 {% extends 'base.html' %}
 
-{% block title %}Messages - GerioCare App{% endblock %}
+{% block title %}Messages{% endblock %}
 
 {% block head_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/messages/messages.css') }}">
+    <!-- Tailwind CSS CDN for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Socket.IO client library -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        /* Custom styles for the scrollbar to make it look cleaner */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Set a custom font family for a better look */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="messages-container">
-    <h1 class="messages-title">Messages</h1>
-    <p class="messages-subtitle">Communicate securely with your care team or patients.</p>
-
-    <div class="messages-layout">
-        <!-- Conversation List / User Selection -->
-        <div class="conversation-list-panel card">
-            <h3 class="panel-title">Conversations</h3>
-            <ul class="conversation-list">
-                {% if users_to_message %}
-                    {% for user in users_to_message %}
-                        <li class="conversation-item {% if loop.first %}active{% endif %} {% if conversations[user.id] and conversations[user.id].unread_count > 0 %}unread{% endif %}"
-                            data-user-id="{{ user.id }}"
-                            data-unread-count="{{ conversations[user.id].unread_count if conversations[user.id] else 0 }}">
-                            <div class="user-avatar">
-                                <i class="fas fa-user-circle"></i>
-                            </div>
-                            <div class="user-info">
-                                <span class="user-name">{{ user.name }}</span>
-                                <span class="user-role">({{ user.role | capitalize }})</span>
-                                {% if user.is_online %}
-                                    <span class="status-indicator online"></span>
-                                {% else %}
-                                    <span class="status-indicator offline"></span>
-                                {% endif %}
-                                {% if conversations[user.id] and conversations[user.id].unread_count > 0 %}
-                                    <span class="unread-badge">{{ conversations[user.id].unread_count }}</span>
-                                {% endif %}
-                            </div>
-                        </li>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted text-center p-2">No contacts to message.</p>
-                {% endif %}
-            </ul>
-        </div>
-
-        <!-- Message Display Area -->
-        <div class="message-display-panel card">
-            <div class="message-header">
-                <h3 class="panel-title" id="currentChatPartnerName">Select a conversation</h3>
+    <!-- Main chat container with a distinct WhatsApp green header -->
+    <div class="flex flex-col md:flex-row h-full w-full max-w-6xl mx-auto rounded-3xl overflow-hidden shadow-2xl bg-white">
+        <!-- Conversation List Panel -->
+        <aside id="conversation-list" class="w-full md:w-1/3 border-r border-slate-200 bg-white flex flex-col">
+            <div class="bg-[#075E54] text-white p-6 shadow-lg">
+                <h2 class="text-3xl font-bold">Chats</h2>
+                <p class="text-sm mt-1 text-green-200">Welcome, {{ current_user.name }}</p>
             </div>
-            <div class="message-area" id="messageArea">
-                <!-- Messages will be loaded here dynamically by JS -->
-                <p class="text-muted text-center p-4" id="noConversationSelected">Select a conversation from the left to start chatting.</p>
+            <div id="user-list" class="flex-1 overflow-y-auto">
+                <!-- User list will be populated by JavaScript -->
+                <div class="p-4 text-center text-slate-400">Loading contacts...</div>
             </div>
-            <div class="message-input-area">
-                <form id="messageForm" method="POST" action="{{ url_for('messages') }}">
-                    <input type="hidden" id="receiverId" name="receiver_id">
-                    <textarea id="messageContent" name="content" class="form-control" rows="3" placeholder="Type your message..." required></textarea>
-                    <button type="submit" class="btn btn-primary mt-2">Send Message <i class="fas fa-paper-plane ml-1"></i></button>
+        </aside>
+
+        <!-- Message Display Panel -->
+        <main class="flex-1 flex flex-col bg-slate-50">
+            <!-- Chat Header -->
+            <header id="chat-header" class="bg-white p-4 shadow-md flex items-center justify-between border-b border-slate-200">
+                <div class="flex items-center">
+                    <div class="h-12 w-12 bg-slate-300 rounded-full flex items-center justify-center text-xl font-bold text-slate-600 mr-4">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div>
+                        <h2 id="chat-partner-name" class="text-xl font-semibold text-slate-800">Select a conversation</h2>
+                        <p id="chat-partner-role" class="text-sm text-slate-500"></p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 text-slate-400">
+                    <button class="hover:text-lime-500 transition-colors"><i class="fas fa-search text-xl"></i></button>
+                    <button class="hover:text-lime-500 transition-colors"><i class="fas fa-ellipsis-v text-xl"></i></button>
+                </div>
+            </header>
+
+            <!-- Message Area with WhatsApp-like background -->
+            <div id="message-area" class="flex-1 p-6 overflow-y-auto flex flex-col-reverse bg-[url('https://placehold.co/800x600/E5DDD5/E5DDD5?text=')] bg-repeat bg-center">
+                <!-- Messages will be populated by JavaScript -->
+                <div class="flex-1 flex items-center justify-center">
+                    <p id="no-conversation-text" class="text-slate-700 text-lg p-4 bg-white/70 backdrop-blur-sm rounded-xl">
+                        Select a conversation to start chatting.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Message Input Area -->
+            <div id="message-input-container" class="p-4 border-t border-slate-200 bg-slate-100">
+                <form id="message-form" class="flex items-center gap-2">
+                    <input type="hidden" id="receiver-id">
+                    <textarea 
+                        id="message-input" 
+                        class="flex-1 p-3 rounded-3xl border-0 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-green-400 transition-shadow resize-none shadow-sm" 
+                        rows="1" 
+                        placeholder="Type a message"
+                        disabled
+                    ></textarea>
+                    <button 
+                        type="submit" 
+                        id="send-button"
+                        class="bg-[#00A884] text-white rounded-full h-12 w-12 flex items-center justify-center shadow-lg hover:bg-[#008C75] transition-colors duration-200 disabled:bg-slate-400 disabled:cursor-not-allowed"
+                        disabled
+                    >
+                        <i class="fas fa-paper-plane text-xl transform -rotate-45"></i>
+                    </button>
                 </form>
             </div>
+        </main>
+    </div>
+
+    <!-- Custom Modal for Alerts -->
+    <div id="custom-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full text-center">
+            <h3 id="modal-title" class="text-xl font-bold text-slate-800 mb-2"></h3>
+            <p id="modal-message" class="text-slate-600 mb-4"></p>
+            <button id="modal-close-button" class="bg-lime-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-lime-600 transition-colors">
+                OK
+            </button>
         </div>
     </div>
-</div>
-{% endblock %}
 
-{% block body_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const conversationList = document.querySelector('.conversation-list');
-        const messageArea = document.getElementById('messageArea');
-        const currentChatPartnerName = document.getElementById('currentChatPartnerName');
-        const noConversationSelected = document.getElementById('noConversationSelected');
-        const receiverIdInput = document.getElementById('receiverId');
-        const messageContentInput = document.getElementById('messageContent');
-        const messageForm = document.getElementById('messageForm');
-        const sendButton = messageForm.querySelector('button[type="submit"]');
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- Helper Functions for UI Interaction ---
+            const showModal = (title, message) => {
+                document.getElementById('modal-title').textContent = title;
+                document.getElementById('modal-message').textContent = message;
+                document.getElementById('custom-modal').classList.remove('hidden');
+                document.getElementById('modal-close-button').onclick = () => {
+                    document.getElementById('custom-modal').classList.add('hidden');
+                };
+            };
+            
+            // Auto-resize the textarea based on content
+            const adjustTextareaHeight = (element) => {
+                element.style.height = 'auto';
+                element.style.height = `${element.scrollHeight}px`;
+            };
 
-        const conversationsData = JSON.parse(`{{ conversations | tojson | safe }}`);
-        const currentUserId = {{ current_user.id }};
+            const textarea = document.getElementById('message-input');
+            textarea.addEventListener('input', () => adjustTextareaHeight(textarea));
+            
+            const currentUserId = {{ current_user.id }};
 
-        function displayMessages(partnerId) {
-            console.log(`Attempting to display messages for partnerId: ${partnerId}`);
-            messageArea.innerHTML = ''; // Clear previous messages
-            noConversationSelected.style.display = 'none';
+            // --- Core Application Logic ---
+            const userListEl = document.getElementById('user-list');
+            const chatPartnerNameEl = document.getElementById('chat-partner-name');
+            const chatPartnerRoleEl = document.getElementById('chat-partner-role');
+            const messageAreaEl = document.getElementById('message-area');
+            const noConversationTextEl = document.getElementById('no-conversation-text');
+            const receiverIdInput = document.getElementById('receiver-id');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+            const messageForm = document.getElementById('message-form');
 
-            const conversation = conversationsData[partnerId];
-            if (conversation && conversation.partner) {
-                currentChatPartnerName.textContent = `Chat with ${conversation.partner.name}`;
-                receiverIdInput.value = partnerId;
-                console.log(`receiverIdInput set to: ${receiverIdInput.value}`);
+            let selectedPartner = null;
+            let usersData = [];
 
-                messageContentInput.focus();
-                console.log(`Input and send button should be enabled for partner: ${conversation.partner.name}`);
+            // Connect to the Socket.IO server
+            const socket = io();
 
-                conversation.messages.forEach(msg => {
-                    const messageClass = msg.sender_id === currentUserId ? 'message-sent' : 'message-received';
-                    const senderName = msg.sender_id === currentUserId ? 'You' : conversation.partner.name;
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('message-bubble', messageClass);
-                    messageElement.innerHTML = `
-                        <p class="message-sender">${senderName}</p>
-                        <p class="message-content">${msg.content}</p>
-                        <span class="message-timestamp">${msg.timestamp}</span>
-                    `;
-                    messageArea.appendChild(messageElement);
-                });
-                messageArea.scrollTop = messageArea.scrollHeight;
-
-                const activeConversationItem = document.querySelector(`.conversation-item[data-user-id="${partnerId}"]`);
-                if (activeConversationItem) {
-                    activeConversationItem.classList.remove('unread');
-                    const unreadBadge = activeConversationItem.querySelector('.unread-badge');
-                    if (unreadBadge) {
-                        unreadBadge.remove();
-                    }
-                }
-
-            } else {
-                currentChatPartnerName.textContent = 'Select a conversation';
-                noConversationSelected.style.display = 'block';
-                receiverIdInput.value = '';
-                console.log('No conversation or partner data found, receiverIdInput cleared.');
-            }
-        }
-
-        conversationList.addEventListener('click', function(event) {
-            const item = event.target.closest('.conversation-item');
-            if (item) {
-                document.querySelectorAll('.conversation-item').forEach(el => el.classList.remove('active'));
-                item.classList.add('active');
-                const partnerId = item.dataset.userId;
-                displayMessages(partnerId);
-            }
-        });
-
-        // MODIFIED: Use fetch API for form submission
-        messageForm.addEventListener('submit', function(event) {
-            // event.preventDefault(); // Prevent default form submission
-
-            const receiverId = receiverIdInput.value;
-            const messageContent = messageContentInput.value;
-
-            console.log('Attempting to send message via fetch:');
-            console.log('Receiver ID:', receiverId);
-            console.log('Message Content:', messageContent);
-
-            if (!receiverId || !messageContent.trim()) {
-                alert('Recipient and message content are required.'); // Use a simple alert for now
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('receiver_id', receiverId);
-            formData.append('content', messageContent.trim());
-
-            fetch(this.action, { // Use the form's action URL
-                method: 'POST',
-                body: formData // Send as FormData
-            })
-            .then(response => {
-                // Flask's redirect will be followed automatically by the browser
-                // We just need to handle the response if it's not a redirect
-                if (response.ok) {
-                    // Message sent successfully, clear input and potentially update UI
-                    messageContentInput.value = '';
-                    // No need to manually call displayMessages here, as SocketIO will handle it
-                    // Or, if SocketIO is not reliable, you could re-fetch messages:
-                    // window.location.reload(); // Simple full page reload
-                } else {
-                    // Handle errors from Flask (e.g., if Flask returns JSON with errors)
-                    return response.text().then(text => { // Get response as text to debug
-                        console.error('Flask response error:', text);
-                        alert('Error sending message. Check console for details.');
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Network error during message send:', error);
-                alert('Network error. Could not send message.');
+            socket.on('connect', () => {
+                console.log('Connected to Socket.IO server!');
             });
-        });
-
-        var socket = io();
-
-        socket.on('connect', function() {
-            console.log('Connected to Socket.IO server!');
-        });
-
-        socket.on('disconnect', function() {
-            console.log('Disconnected from Socket.IO server.');
-        });
-
-        socket.on('new_message', function(data) {
-            console.log('New message received via Socket.IO:', data);
-            const activePartnerId = receiverIdInput.value;
-            if (data.sender_id == activePartnerId || data.receiver_id == activePartnerId) {
-                let conversation = conversationsData[activePartnerId];
-                if (!conversation) {
-                    conversation = {
-                        partner: { name: data.sender_name, id: data.sender_id, role: 'unknown', is_online: false },
-                        messages: [],
-                        unread_count: 0
-                    };
-                    conversationsData[activePartnerId] = conversation;
+            
+            // Handle new messages pushed from the server
+            socket.on('new_message', (message) => {
+                console.log('New message received:', message);
+                // Check if the message is for the currently selected conversation
+                if (selectedPartner && (message.sender_id == selectedPartner.id || message.sender_id == currentUserId)) {
+                    // Update the UI with the new message
+                    renderMessageBubble(message);
+                    messageAreaEl.scrollTop = messageAreaEl.scrollHeight; // Scroll to bottom
                 }
+            });
 
-                const messageExists = conversation.messages.some(msg =>
-                    msg.sender_id === data.sender_id &&
-                    msg.content === data.content &&
-                    msg.timestamp === data.timestamp
-                );
-
-                if (!messageExists) {
-                    conversation.messages.push({
-                        sender_id: data.sender_id,
-                        receiver_id: data.receiver_id,
-                        content: data.content,
-                        timestamp: data.timestamp,
-                        is_read: false
-                    });
-                    displayMessages(activePartnerId);
-                }
-            } else {
-                const conversationItem = document.querySelector(`.conversation-item[data-user-id="${data.sender_id}"]`);
-                if (conversationItem) {
-                    let currentUnreadCount = parseInt(conversationItem.dataset.unreadCount || 0);
-                    currentUnreadCount++;
-                    conversationItem.dataset.unreadCount = currentUnreadCount;
-                    conversationItem.classList.add('unread');
-                    let unreadBadge = conversationItem.querySelector('.unread-badge');
-                    if (!unreadBadge) {
-                        unreadBadge = document.createElement('span');
-                        unreadBadge.classList.add('unread-badge');
-                        conversationItem.querySelector('.user-info').appendChild(unreadBadge);
+            // Handle user status updates from the server
+            socket.on('user_status_update', (data) => {
+                console.log('User status update:', data);
+                // Find the user in the list and update their status indicator
+                const userItem = document.querySelector(`[data-user-id="${data.user_id}"]`);
+                if (userItem) {
+                    const statusDot = userItem.querySelector('.status-dot');
+                    if (statusDot) {
+                        if (data.is_online) {
+                            statusDot.classList.remove('bg-slate-400');
+                            statusDot.classList.add('bg-green-500');
+                            statusDot.title = 'Online';
+                        } else {
+                            statusDot.classList.remove('bg-green-500');
+                            statusDot.classList.add('bg-slate-400');
+                            statusDot.title = `Offline since ${new Date(data.last_online).toLocaleString()}`;
+                        }
                     }
-                    unreadBadge.textContent = currentUnreadCount;
-                } else {
-                    alert(`New message from ${data.sender_name}: ${data.content}`);
                 }
-            }
+            });
+
+            // Function to fetch and render the user list
+            const fetchAndRenderUserList = async () => {
+                try {
+                    const response = await fetch('/api/messages/users');
+                    if (!response.ok) throw new Error('Failed to fetch users.');
+                    usersData = await response.json();
+                    
+                    userListEl.innerHTML = '';
+                    if (usersData.length === 0) {
+                        userListEl.innerHTML = '<p class="p-4 text-center text-slate-500">No other contacts found.</p>';
+                    } else {
+                        usersData.forEach(user => {
+                            const userItem = document.createElement('div');
+                            userItem.className = 'flex items-center gap-4 p-4 hover:bg-slate-100 cursor-pointer transition-colors border-b border-slate-200 last:border-b-0';
+                            userItem.dataset.userId = user.id;
+
+                            const statusColor = user.is_online ? 'bg-green-500' : 'bg-slate-400';
+                            const statusTitle = user.is_online ? 'Online' : 'Offline';
+
+                            userItem.innerHTML = `
+                                <div class="relative">
+                                    <div class="h-12 w-12 bg-slate-300 rounded-full flex items-center justify-center text-xl font-bold text-slate-600">
+                                        <i class="fas fa-user-circle"></i>
+                                    </div>
+                                    <span class="status-dot absolute bottom-0 right-0 h-3 w-3 ${statusColor} rounded-full border-2 border-white" title="${statusTitle}"></span>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-800">${user.name}</p>
+                                    <p class="text-xs text-slate-500">${user.role}</p>
+                                </div>
+                            `;
+                            userListEl.appendChild(userItem);
+                        });
+                    }
+                } catch (error) {
+                    showModal('Error', 'Could not load contacts. Please try again.');
+                    console.error('Error fetching users:', error);
+                }
+            };
+            
+            // Renders a single message bubble
+            const renderMessageBubble = (msg) => {
+                const messageBubble = document.createElement('div');
+                const isSent = msg.sender_id == currentUserId; 
+                
+                // WhatsApp-style message bubbles
+                const bubbleColor = isSent ? 'bg-[#dcf8c6] text-slate-900 rounded-br-none' : 'bg-white text-slate-800 rounded-bl-none';
+                const alignment = isSent ? 'self-end' : 'self-start';
+
+                messageBubble.className = `max-w-xs md:max-w-md p-3 rounded-xl shadow-sm ${bubbleColor} ${alignment} mt-2`;
+                
+                // Format the timestamp for display
+                const date = new Date(msg.timestamp);
+                const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                messageBubble.innerHTML = `
+                    <p class="text-sm break-words">${msg.content}</p>
+                    <span class="block text-right text-xs text-slate-500 mt-1">${timeString}</span>
+                `;
+                messageAreaEl.prepend(messageBubble); // Prepend to show new messages at the bottom
+            };
+
+            // Function to fetch and render messages for a specific conversation
+            const fetchAndRenderMessages = async (partnerId) => {
+                if (!partnerId) {
+                    chatPartnerNameEl.textContent = 'Select a conversation';
+                    chatPartnerRoleEl.textContent = '';
+                    messageAreaEl.innerHTML = `
+                        <div class="flex-1 flex items-center justify-center">
+                            <p id="no-conversation-text" class="text-slate-700 text-lg p-4 bg-white/70 backdrop-blur-sm rounded-xl">
+                                Select a conversation to start chatting.
+                            </p>
+                        </div>
+                    `;
+                    messageInput.disabled = true;
+                    sendButton.disabled = true;
+                    return;
+                }
+
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageAreaEl.innerHTML = '<div class="text-center text-slate-400">Loading messages...</div>'; 
+                noConversationTextEl.style.display = 'none';
+
+                try {
+                    const response = await fetch(`/api/messages/history/${partnerId}`);
+                    if (!response.ok) throw new Error('Failed to fetch messages.');
+                    const messages = await response.json();
+                    
+                    messageAreaEl.innerHTML = '';
+                    if (messages.length === 0) {
+                         messageAreaEl.innerHTML = `
+                            <div class="flex-1 flex items-center justify-center">
+                                <p class="text-slate-700 text-lg p-4 bg-white/70 backdrop-blur-sm rounded-xl">
+                                    No messages yet. Say hello!
+                                </p>
+                            </div>
+                         `;
+                    } else {
+                        messages.reverse().forEach(renderMessageBubble);
+                        messageAreaEl.scrollTop = messageAreaEl.scrollHeight;
+                    }
+                } catch (error) {
+                    showModal('Error', 'Could not load messages. Please try again.');
+                    console.error('Error fetching messages:', error);
+                }
+            };
+            
+            // Event listener for clicking a conversation in the user list
+            userListEl.addEventListener('click', (e) => {
+                const userItem = e.target.closest('[data-user-id]');
+                if (userItem) {
+                    document.querySelectorAll('#user-list > div').forEach(el => {
+                        el.classList.remove('bg-slate-100');
+                    });
+                    
+                    userItem.classList.add('bg-slate-100');
+                    
+                    const userId = userItem.dataset.userId;
+                    const partner = usersData.find(u => u.id == userId);
+                    if (partner) {
+                        selectedPartner = partner;
+                        receiverIdInput.value = partner.id;
+                        chatPartnerNameEl.textContent = partner.name;
+                        chatPartnerRoleEl.textContent = partner.role;
+                        fetchAndRenderMessages(partner.id);
+                    }
+                }
+            });
+
+            // Event listener for message form submission
+            messageForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const messageContent = messageInput.value.trim();
+                const receiverId = receiverIdInput.value;
+
+                if (!messageContent || !receiverId) {
+                    showModal('Error', 'Message cannot be empty and a recipient must be selected.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/messages/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            receiver_id: receiverId,
+                            content: messageContent
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Failed to send message.');
+                    }
+                    
+                    messageInput.value = '';
+                    adjustTextareaHeight(messageInput);
+                    
+                } catch (error) {
+                    showModal('Network Error', `Failed to send message. Reason: ${error.message}`);
+                    console.error('Error sending message:', error);
+                }
+            });
+
+            fetchAndRenderUserList();
         });
-
-        if (conversationList.firstElementChild) {
-            const firstPartnerId = conversationList.firstElementChild.dataset.userId;
-            conversationList.firstElementChild.click(); 
-        } else {
-            noConversationSelected.style.display = 'block';
-            receiverIdInput.value = '';
-        }
-
-        messageArea.scrollTop = messageArea.scrollHeight;
-    });
-</script>
+    </script>
 {% endblock %}

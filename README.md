@@ -1,4 +1,4 @@
-# GerioCare App
+# GerioCare
 
 Developed by: **Atom De Legend**
 

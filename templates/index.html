@@ -30,8 +30,13 @@
                     {% elif current_user.role == 'admin' %}
                         <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary-hero">Go to Dashboard</a>
                     {% elif current_user.role == 'therapist' %}
-                        <a href="{{ url_for('therapist_dashboard') }}" class="btn btn-primary-hero">Go to Dashboard</a>
+                        {% if user_has_active_subscription %}
+                            <a href="{{ url_for('therapist_dashboard') }}" class="btn btn-primary-hero">Go to Dashboard</a>
+                        {% else %}
+                            <a href="{{ url_for('pricing') }}" class="btn btn-primary-hero">Subscribe to a Plan</a>
+                        {% endif %}
                     {% elif current_user.role == 'caregiver' %}
+                        {# If caregiver, redirect to caregiver dashboard #}
                         <a href="{{ url_for('caregiver_dashboard') }}" class="btn btn-primary-hero">Go to Dashboard</a>
                     {% endif %}
                 {% endif %}
